@@ -1,0 +1,62 @@
+#include "TileMap.h"
+
+TileMap::TileMap() {
+    tileSize = 32;
+
+    map = {
+        {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
+        {2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2},
+        {2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2},
+        {2,1,1,1,2,2,2,1,1,1,1,1,1,1,1,1,1,2,2,2,1,1,1,1,2},
+        {2,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,2},
+        {2,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,2},
+        {2,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,2},
+        {2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2},
+        {2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2},
+        {2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2},
+        {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2}
+    };
+}
+
+bool TileMap::load() {
+    return tileset.loadFromFile("assets/32x32/A2_32x32.png");
+}
+
+void TileMap::draw(sf::RenderWindow& window) {
+    sf::Sprite tile;
+    tile.setTexture(tileset);
+
+    for (int y = 0; y < map.size(); y++) {
+        for (int x = 0; x < map[y].size(); x++) {
+            if (map[y][x] == 1) {
+                tile.setTextureRect(sf::IntRect(0, 0, 32, 32));      // piso
+            } else if (map[y][x] == 2) {
+                tile.setTextureRect(sf::IntRect(192, 0, 32, 32));    // pared
+            }
+
+            tile.setPosition((float)(x * tileSize), (float)(y * tileSize));
+            window.draw(tile);
+        }
+    }
+}
+
+bool TileMap::checkCollision(sf::FloatRect bounds) {
+    for (int y = 0; y < map.size(); y++) {
+        for (int x = 0; x < map[y].size(); x++) {
+            if (map[y][x] == 2) {
+                sf::FloatRect wall(
+                    (float)(x * tileSize),
+                    (float)(y * tileSize),
+                    (float)tileSize,
+                    (float)tileSize
+                );
+
+                if (bounds.intersects(wall)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
