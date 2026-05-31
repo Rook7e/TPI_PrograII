@@ -47,6 +47,7 @@ public:
     sf::RectangleShape staminaBar;
 
     int getVida();
+    void heal(int amount);
     void reset();
     void drawLife(sf::RenderWindow& window);
     void takeDamage(int damage);

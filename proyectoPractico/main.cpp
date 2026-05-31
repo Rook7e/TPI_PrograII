@@ -8,6 +8,7 @@
 #include "circle.h"
 #include "enemy.h"
 #include "TileMap.h"
+#include "Medkit.h"
 
 enum GameState {
     Playing,
@@ -45,6 +46,7 @@ int main() {
 
     std::vector<EnemyChaser> chasers;
     std::vector<EnemyShooter> shooters;
+    std::vector<Medkit> medkits;
 
     chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
     shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
@@ -52,6 +54,7 @@ int main() {
     sf::Clock spawnChaserClock;
     sf::Clock spawnShooterClock;
     sf::Clock vacuumDamageClock;
+    sf::Clock medkitSpawnClock;
     sf::Clock clock;
 
     while (window.isOpen()) {
@@ -143,6 +146,30 @@ int main() {
                 spawnShooterClock.restart();
             }
 
+            if (medkitSpawnClock.getElapsedTime().asSeconds() >= 5.f && medkits.size() < 3) {
+                float x = 60.f + (rand() % 680);
+                float y = 60.f + (rand() % 480);
+
+                medkits.push_back(Medkit(sf::Vector2f(x, y)));
+                medkitSpawnClock.restart();
+            }
+
+            medkits.erase(
+                std::remove_if(
+                    medkits.begin(),
+                    medkits.end(),
+                    [&player](Medkit& medkit) {
+                        if (medkit.getBounds().intersects(player.getBounds())) {
+                            player.heal(1);
+                            return true;
+                        }
+
+                        return false;
+                    }
+                ),
+                medkits.end()
+            );
+
             if (player.isDead()) {
                 gameState = GameOver;
                 window.setTitle("Estas muerto - Presiona R para reiniciar");
@@ -157,6 +184,7 @@ int main() {
 
                 chasers.clear();
                 shooters.clear();
+                medkits.clear();
 
                 chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
                 shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
@@ -164,6 +192,7 @@ int main() {
                 spawnChaserClock.restart();
                 spawnShooterClock.restart();
                 vacuumDamageClock.restart();
+                medkitSpawnClock.restart();
 
                 window.setTitle("Proyecto Practico");
                 gameState = Playing;
@@ -176,6 +205,10 @@ int main() {
         window.clear(sf::Color::Black);
 
         tileMap.draw(window);
+
+        for (int i = 0; i < medkits.size(); i++) {
+            medkits[i].draw(window);
+        }
 
         player.draw(window);
         aspiradora.draw(window);
