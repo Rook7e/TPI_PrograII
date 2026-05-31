@@ -452,3 +452,54 @@
 	<SFML/Graphics.hpp>
 	<vector>
 
+1780155375 source:c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\circle.cpp
+	"circle.h"
+	<cmath>
+
+1780155375 c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\circle.h
+	<SFML/Graphics.hpp>
+
+1780155375 source:c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\enemy.cpp
+	"Enemy.h"
+	<cmath>
+	<algorithm>
+	<iostream>
+
+1780155375 c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\enemy.h
+	<SFML/Graphics.hpp>
+	<vector>
+	"Player.h"
+	"circle.h"
+
+1780252281 c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\player.h
+	<SFML/Graphics.hpp>
+
+1780252426 source:c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\main.cpp
+	<SFML/Graphics.hpp>
+	<vector>
+	<algorithm>
+	<cstdlib>
+	<ctime>
+	"Player.h"
+	"circle.h"
+	"enemy.h"
+	"TileMap.h"
+	"Medkit.h"
+
+1780100272 c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\tilemap.h
+	<SFML/Graphics.hpp>
+	<vector>
+
+1780252281 source:c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\player.cpp
+	"Player.h"
+	<iostream>
+
+1780252281 c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\medkit.h
+	<SFML/Graphics.hpp>
+
+1780252281 source:c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\medkit.cpp
+	"Medkit.h"
+
+1780155791 source:c:\users\pc\onedrive\documentos\github\tpi_prograii\proyectopractico\tilemap.cpp
+	"TileMap.h"
+

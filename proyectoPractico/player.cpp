@@ -203,3 +203,16 @@ sf::Vector2f Player::getPosition() {
 void Player::setPosition(sf::Vector2f position) {
     sprite.setPosition(position);
 }
+
+void Player::heal(int amount) {
+    vida += amount;
+
+    if (vida > maxVida) {
+        vida = maxVida;
+    }
+
+    float lifePercent = (float)vida / maxVida;
+    healthBar.setSize(sf::Vector2f(100.f * lifePercent, 10.f));
+
+    std::cout << "Vida player: " << vida << std::endl;
+}
