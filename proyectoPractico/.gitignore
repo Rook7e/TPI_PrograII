@@ -1,0 +1,11 @@
+# Ejecutables
+*.exe
+*.cbp
+
+# Objetos compilados
+obj/
+bin/
+
+# Archivos de CodeBlocks
+*.depend
+*.layout
