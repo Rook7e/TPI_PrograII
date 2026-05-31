@@ -60,3 +60,6 @@ bool TileMap::checkCollision(sf::FloatRect bounds) {
 
     return false;
 }
+//probando
+
+//probadno
