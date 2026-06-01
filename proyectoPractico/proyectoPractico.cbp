@@ -40,13 +40,20 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename=".gitignore" />
+		<Unit filename="Medkit.cpp" />
+		<Unit filename="Medkit.h" />
+		<Unit filename="TileMap.cpp" />
+		<Unit filename="TileMap.h" />
 		<Unit filename="circle.cpp" />
 		<Unit filename="circle.h" />
 		<Unit filename="enemy.cpp" />
 		<Unit filename="enemy.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="pj_juego.png" />
 		<Unit filename="player.cpp" />
 		<Unit filename="player.h" />
+		<Unit filename="proyectoPractico.cbp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>
