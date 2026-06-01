@@ -1,0 +1,8 @@
+# Ejecutables
+
+# Objetos compilados
+obj/
+
+# Archivos de CodeBlocks
+*.depend
+*.layout

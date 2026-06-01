@@ -13,14 +13,14 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="C:/SFML/include" />
+					<Add directory="$(#sfml)/include" />
 				</Compiler>
 				<Linker>
 					<Add option="-lsfml-graphics" />
 					<Add option="-lsfml-window" />
 					<Add option="-lsfml-system" />
 					<Add option="-lsfml-audio" />
-					<Add directory="C:/SFML/lib" />
+					<Add directory="$(#sfml)/lib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -30,23 +30,46 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add directory="$(#sfml)/include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-lsfml-graphics" />
+					<Add option="-lsfml-window" />
+					<Add option="-lsfml-system" />
+					<Add option="-lsfml-audio" />
+					<Add directory="$(#sfml)/lib" />
 				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add directory="$(#sfml)/include" />
 		</Compiler>
+		<Linker>
+			<Add option="-lsfml-graphics" />
+			<Add option="-lsfml-window" />
+			<Add option="-lsfml-system" />
+			<Add option="-lsfml-audio" />
+			<Add directory="$(#sfml)/include" />
+		</Linker>
+		<Unit filename=".gitignore" />
+		<Unit filename="Medkit.cpp" />
+		<Unit filename="Medkit.h" />
+		<Unit filename="TileMap.cpp" />
+		<Unit filename="TileMap.h" />
 		<Unit filename="circle.cpp" />
 		<Unit filename="circle.h" />
 		<Unit filename="enemy.cpp" />
 		<Unit filename="enemy.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="pj_juego.png" />
 		<Unit filename="player.cpp" />
 		<Unit filename="player.h" />
+		<Unit filename="proyectoPractico.cbp" />
+		<Unit filename="proyectoPractico.depend" />
+		<Unit filename="proyectoPractico.layout" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>
