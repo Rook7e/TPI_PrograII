@@ -31,7 +31,7 @@ void Player::reset() {
     moving = false;
     running = false;
 
-    sprite.setTextureRect(sf::IntRect(0, 0, 320, 320));
+    sprite.setTextureRect(sf::IntRect(0, 0, 100, 320));
     sprite.setScale(0.2f, 0.2f);
     sprite.setOrigin(160.f, 0.f);
     sprite.setPosition(100.f, 100.f);
@@ -172,7 +172,14 @@ sf::Vector2f Player::getCenter() {
 }
 
 sf::FloatRect Player::getBounds() {
-    return sprite.getGlobalBounds();
+    sf::FloatRect b = sprite.getGlobalBounds();
+
+    return sf::FloatRect(
+        b.left + 12.f,
+        b.top + 8.f,
+        b.width - 24.f,
+        b.height - 16.f
+    );
 }
 
 void Player::takeDamage(int damage) {
