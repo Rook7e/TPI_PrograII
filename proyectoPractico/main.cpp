@@ -3,12 +3,15 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
 #include "Player.h"
 #include "circle.h"
 #include "enemy.h"
 #include "TileMap.h"
 #include "Medkit.h"
+
+using namespace std;
 
 enum GameState {
     Playing,
@@ -34,11 +37,14 @@ int main() {
     Player player;
     circle aspiradora;
 
+
     TileMap tileMap;
 
     if (!tileMap.load()) {
-        return -1;
+    return -1;
     }
+
+    tileMap.loadMapFile("maps/map3.txt");
 
     srand((unsigned)time(NULL));
 
@@ -204,7 +210,7 @@ int main() {
 
         window.clear(sf::Color::Black);
 
-        tileMap.draw(window);
+        tileMap.drawMap(window);
 
         for (int i = 0; i < medkits.size(); i++) {
             medkits[i].draw(window);
