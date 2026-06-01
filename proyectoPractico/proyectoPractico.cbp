@@ -10,17 +10,17 @@
 				<Option output="bin/Debug/proyectoPractico" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
-				<Option compiler="gcc" />
+				<Option compiler="gcc_850_e" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="C:/SFML/include" />
+					<Add directory="E:/SFML/include" />
 				</Compiler>
 				<Linker>
 					<Add option="-lsfml-graphics" />
 					<Add option="-lsfml-window" />
 					<Add option="-lsfml-system" />
 					<Add option="-lsfml-audio" />
-					<Add directory="C:/SFML/lib" />
+					<Add directory="E:/SFML/lib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -40,13 +40,22 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename=".gitignore" />
+		<Unit filename="Medkit.cpp" />
+		<Unit filename="Medkit.h" />
+		<Unit filename="TileMap.cpp" />
+		<Unit filename="TileMap.h" />
 		<Unit filename="circle.cpp" />
 		<Unit filename="circle.h" />
 		<Unit filename="enemy.cpp" />
 		<Unit filename="enemy.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="pj_juego.png" />
 		<Unit filename="player.cpp" />
 		<Unit filename="player.h" />
+		<Unit filename="proyectoPractico.cbp" />
+		<Unit filename="proyectoPractico.depend" />
+		<Unit filename="proyectoPractico.layout" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>
