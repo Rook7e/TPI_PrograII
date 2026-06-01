@@ -17,6 +17,8 @@ public:
     bool load();
     void draw(sf::RenderWindow& window);
     bool checkCollision(sf::FloatRect bounds);
+    bool loadMapFile(const std::string& fileName);
+    void drawMap(sf::RenderWindow& window);
 };
 
 #endif
