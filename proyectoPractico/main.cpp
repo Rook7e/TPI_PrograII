@@ -31,6 +31,7 @@ sf::Vector2f randomSpawn(sf::RenderWindow& window) {
 }
 
 int main() {
+    int Score = 0;
     sf::RenderWindow window(sf::VideoMode(800, 600), "Proyecto Practico");
     window.setFramerateLimit(60);
 
@@ -93,7 +94,7 @@ int main() {
             }
 
             for (int i = 0; i < shooters.size(); i++) {
-                shooters[i].update(deltaTime, player, aspiradora, window);
+                shooters[i].update(deltaTime, player, aspiradora, window,tileMap);
             }
 
             if (vacuumDamageClock.getElapsedTime().asSeconds() >= 0.25f) {
@@ -179,6 +180,7 @@ int main() {
             if (player.isDead()) {
                 gameState = GameOver;
                 window.setTitle("Estas muerto - Presiona R para reiniciar");
+                cout << Score << endl;
             }
 
             break;
@@ -187,6 +189,8 @@ int main() {
         case GameOver: {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
                 player.reset();
+
+                Score = 0;
 
                 chasers.clear();
                 shooters.clear();
