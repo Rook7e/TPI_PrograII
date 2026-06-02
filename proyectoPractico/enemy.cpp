@@ -151,7 +151,7 @@ EnemyShooter::EnemyShooter(sf::Vector2f position) {
      vida = maxVida;
 }
 
-void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap) {
+void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window,TileMap& tileMap) {
     if (isDead()) {
         return;
     }
