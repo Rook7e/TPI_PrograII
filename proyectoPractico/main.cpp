@@ -93,7 +93,7 @@ int main() {
             }
 
             for (int i = 0; i < shooters.size(); i++) {
-                shooters[i].update(deltaTime, player, aspiradora, window);
+                shooters[i].update(deltaTime, player, aspiradora, window, tileMap);
             }
 
             if (vacuumDamageClock.getElapsedTime().asSeconds() >= 0.25f) {
