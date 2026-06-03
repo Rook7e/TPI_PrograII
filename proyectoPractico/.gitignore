@@ -2,6 +2,7 @@
 
 # Objetos compilados
 obj/
+bin/debug/proyectoPractico.exe
 
 # Archivos de CodeBlocks
 *.depend

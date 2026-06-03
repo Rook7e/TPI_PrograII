@@ -10,7 +10,16 @@
 
 struct Projectile {
     sf::CircleShape shape;
+    sf::Sprite sprite;
+
+    static sf::Texture texture;
+    static bool textureLoaded;
+
     sf::Vector2f velocity;
+
+    int currentFrame;
+    float animationTimer;
+    float frameTime;
 
     Projectile(sf::Vector2f position, sf::Vector2f direction);
 
@@ -28,6 +37,9 @@ private:
     int maxVida;
     float damageTimer;
     float damageCooldown;
+    sf::Sprite sprite;
+    static sf::Texture texture;
+    static bool textureLoaded;
 
 public:
     EnemyChaser(sf::Vector2f position);
