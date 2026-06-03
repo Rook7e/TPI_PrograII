@@ -541,10 +541,16 @@ void EnemyThrower::update(
     std::remove_if(
         furnitureProjectiles.begin(),
         furnitureProjectiles.end(),
-        [&window, &player, &tileMap](FurnitureProjectile& projectile)
+        [&window, &player, &aspiradora, &tileMap](FurnitureProjectile& projectile)
         {
             if(tileMap.checkCollision(
                 projectile.sprite.getGlobalBounds()))
+            {
+                return true;
+            }
+
+            if(projectile.sprite.getGlobalBounds().intersects(
+                aspiradora.getBounds()))
             {
                 return true;
             }
