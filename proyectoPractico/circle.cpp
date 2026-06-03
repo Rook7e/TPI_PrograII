@@ -3,11 +3,25 @@
 
 circle::circle() {
     shape.setRadius(20.f);
-    shape.setFillColor(sf::Color::Cyan);
+    shape.setFillColor(sf::Color::Transparent);
     shape.setOrigin(20.f, 20.f);
 
     maxDistance = 120.f;
     attachPoint = sf::Vector2f(0.f, 0.f);
+
+    textureLoaded = texture.loadFromFile("assets/puntaAspiradora.png");
+
+    if (textureLoaded) {
+        sprite.setTexture(texture);
+
+        sf::Vector2u textureSize = texture.getSize();
+        sprite.setOrigin(textureSize.x / 2.f, textureSize.y / 2.f);
+
+        float scale = 40.f / textureSize.x;
+        sprite.setScale(scale, scale);
+    } else {
+        shape.setFillColor(sf::Color::Cyan);
+    }
 }
 
 void circle::update(sf::RenderWindow& window, sf::Vector2f playerCenter) {
@@ -33,7 +47,15 @@ void circle::update(sf::RenderWindow& window, sf::Vector2f playerCenter) {
         );
     } else {
         shape.setPosition(mouseWorld);
+
     }
+    sprite.setPosition(shape.getPosition());
+
+    sf::Vector2f aimDirection = shape.getPosition() - playerCenter;
+
+    float angle = std::atan2(aimDirection.y, aimDirection.x) * 180.f / 3.14159265f;
+
+    sprite.setRotation(angle);
 }
 
 void circle::draw(sf::RenderWindow& window) {
@@ -43,7 +65,11 @@ void circle::draw(sf::RenderWindow& window) {
     };
 
     window.draw(hose, 2, sf::Lines);
+    if (textureLoaded) {
+    window.draw(sprite);
+} else {
     window.draw(shape);
+}
 }
 
 sf::FloatRect circle::getBounds() {

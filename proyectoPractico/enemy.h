@@ -64,6 +64,9 @@ private:
     float shootCooldown;
     int vida;
     int maxVida;
+    sf::Sprite sprite;
+    static sf::Texture shooterTexture;
+    static bool shooterTextureLoaded;
 
 public:
     EnemyShooter(sf::Vector2f position);
