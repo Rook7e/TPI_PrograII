@@ -10,6 +10,10 @@ private:
     sf::Vector2f attachPoint;
     float maxDistance;
 
+    sf::Sprite sprite;
+    sf::Texture texture;
+    bool textureLoaded;
+
 public:
     circle();
 

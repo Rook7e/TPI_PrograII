@@ -9,6 +9,9 @@ bool EnemyChaser::textureLoaded = false;
 sf::Texture Projectile::texture;
 bool Projectile::textureLoaded = false;
 
+sf::Texture EnemyShooter::shooterTexture;
+bool EnemyShooter::shooterTextureLoaded = false;
+
 float vectorLength(sf::Vector2f vector) {
     return std::sqrt(vector.x * vector.x + vector.y * vector.y);
 }
@@ -157,11 +160,17 @@ void EnemyChaser::update(float deltaTime, Player& player) {
     damageTimer += deltaTime;
 
     sf::Vector2f playerCenter = player.getCenter();
-    sf::Vector2f direction = playerCenter - shape.getPosition();
-    direction = normalize(direction);
+    sf::Vector2f rawDirection = playerCenter - shape.getPosition();
+    sf::Vector2f direction = normalize(rawDirection);
 
     shape.move(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
     sprite.setPosition(shape.getPosition());
+
+    if (rawDirection.x > 0.f) {
+        sprite.setScale(std::abs(sprite.getScale().x), sprite.getScale().y);
+    } else if (rawDirection.x < 0.f) {
+        sprite.setScale(-std::abs(sprite.getScale().x), sprite.getScale().y);
+    }
 
     if (shape.getGlobalBounds().intersects(player.getBounds()) &&
         damageTimer >= damageCooldown) {
@@ -226,14 +235,35 @@ EnemyShooter::EnemyShooter(sf::Vector2f position) {
     shape.setOrigin(24.f, 24.f);
     shape.setPosition(position);
 
+    if (!shooterTextureLoaded) {
+        if (shooterTexture.loadFromFile("assets/Shooter.png")) {
+            shooterTextureLoaded = true;
+        } else {
+            std::cout << "Error al cargar assets/Shooter.png" << std::endl;
+        }
+    }
+
+    if (shooterTextureLoaded) {
+        sprite.setTexture(shooterTexture);
+
+        sf::Vector2u textureSize = shooterTexture.getSize();
+        sprite.setOrigin(textureSize.x / 2.f, textureSize.y / 2.f);
+
+        float scale = 48.f / textureSize.x;
+        sprite.setScale(scale, scale);
+        sprite.setPosition(position);
+
+        shape.setFillColor(sf::Color::Transparent);
+    }
+
     speed = 90.f;
     desiredDistance = 220.f;
 
     shootTimer = 0.f;
     shootCooldown = 1.5f;
 
-     maxVida = 5;
-     vida = maxVida;
+    maxVida = 5;
+    vida = maxVida;
 }
 
 void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window,TileMap& tileMap) {
@@ -256,6 +286,14 @@ void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, s
 
     if (distance < desiredDistance - 30.f) {
         shape.move(-direction.x * speed * deltaTime, -direction.y * speed * deltaTime);
+    }
+
+    sprite.setPosition(shape.getPosition());
+
+    if (directionToPlayer.x > 0.f) {
+    sprite.setScale(std::abs(sprite.getScale().x), sprite.getScale().y);
+    } else if (directionToPlayer.x < 0.f) {
+        sprite.setScale(-std::abs(sprite.getScale().x), sprite.getScale().y);
     }
 
     shootTimer += deltaTime;
@@ -300,7 +338,11 @@ void EnemyShooter::draw(sf::RenderWindow& window) {
         return;
     }
 
+    if (shooterTextureLoaded) {
+    window.draw(sprite);
+} else {
     window.draw(shape);
+}
 
     sf::RectangleShape back(sf::Vector2f(48.f, 6.f));
     back.setFillColor(sf::Color(70, 20, 20));
@@ -332,6 +374,8 @@ void EnemyShooter::takeDamage(int damage, sf::Vector2f hitPosition) {
 
     float knockbackForce = 45.f;
     shape.move(knockDirection.x * knockbackForce, knockDirection.y * knockbackForce);
+
+    sprite.setPosition(shape.getPosition());
 
     if (vida < 0) {
         vida = 0;
