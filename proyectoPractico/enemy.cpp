@@ -3,6 +3,12 @@
 #include <algorithm>
 #include <iostream>
 
+sf::Texture EnemyChaser::texture;
+bool EnemyChaser::textureLoaded = false;
+
+sf::Texture Projectile::texture;
+bool Projectile::textureLoaded = false;
+
 float vectorLength(sf::Vector2f vector) {
     return std::sqrt(vector.x * vector.x + vector.y * vector.y);
 }
@@ -18,10 +24,37 @@ sf::Vector2f normalize(sf::Vector2f vector) {
 }
 
 Projectile::Projectile(sf::Vector2f position, sf::Vector2f direction) {
-    shape.setRadius(6.f);
-    shape.setFillColor(sf::Color::Yellow);
-    shape.setOrigin(6.f, 6.f);
+    shape.setRadius(8.f);
+    shape.setFillColor(sf::Color::Transparent);
+    shape.setOrigin(8.f, 8.f);
     shape.setPosition(position);
+
+    if (!textureLoaded) {
+        if (texture.loadFromFile("Ectoplasma.png")) {
+            textureLoaded = true;
+        } else {
+            std::cout << "Error al cargar Ectoplasma.png" << std::endl;
+            shape.setFillColor(sf::Color::Yellow);
+        }
+    }
+
+    currentFrame = 0;
+    animationTimer = 0.f;
+    frameTime = 0.08f;
+
+    if (textureLoaded) {
+        sprite.setTexture(texture);
+
+        int frameWidth = texture.getSize().x / 4;
+        int frameHeight = texture.getSize().y;
+
+        sprite.setTextureRect(sf::IntRect(0, 0, frameWidth, frameHeight));
+        sprite.setOrigin(frameWidth / 2.f, frameHeight / 2.f);
+
+        float scale = 200.f / frameWidth;
+        sprite.setScale(scale, scale);
+        sprite.setPosition(position);
+    }
 
     direction = normalize(direction);
 
@@ -31,10 +64,40 @@ Projectile::Projectile(sf::Vector2f position, sf::Vector2f direction) {
 
 void Projectile::update(float deltaTime) {
     shape.move(velocity.x * deltaTime, velocity.y * deltaTime);
+
+    if (textureLoaded) {
+        sprite.move(velocity.x * deltaTime, velocity.y * deltaTime);
+
+        animationTimer += deltaTime;
+
+        if (animationTimer >= frameTime) {
+            currentFrame++;
+
+            if (currentFrame >= 4) {
+                currentFrame = 0;
+            }
+
+            int frameWidth = texture.getSize().x / 4;
+            int frameHeight = texture.getSize().y;
+
+            sprite.setTextureRect(sf::IntRect(
+                currentFrame * frameWidth,
+                0,
+                frameWidth,
+                frameHeight
+            ));
+
+            animationTimer = 0.f;
+        }
+    }
 }
 
 void Projectile::draw(sf::RenderWindow& window) {
-    window.draw(shape);
+    if (textureLoaded) {
+        window.draw(sprite);
+    } else {
+        window.draw(shape);
+    }
 }
 
 bool Projectile::isOutside(sf::RenderWindow& window) {
@@ -53,14 +116,34 @@ bool Projectile::hitsPlayer(Player& player) {
 
 EnemyChaser::EnemyChaser(sf::Vector2f position) {
     shape.setRadius(22.f);
-    shape.setFillColor(sf::Color::Red);
+    shape.setFillColor(sf::Color::Transparent);
     shape.setOrigin(22.f, 22.f);
     shape.setPosition(position);
 
+    if (!textureLoaded) {
+        if (!texture.loadFromFile("boo.png")) {
+            std::cout << "Error al cargar boo.png" << std::endl;
+        }
+
+        textureLoaded = true;
+    }
+
+    sprite.setTexture(texture);
+
+    sf::Vector2u textureSize = texture.getSize();
+
+    if (textureSize.x > 0) {
+        float scale = 44.f / textureSize.x;
+        sprite.setScale(scale, scale);
+        sprite.setOrigin(textureSize.x / 2.f, textureSize.y / 2.f);
+    }
+
+    sprite.setPosition(position);
+
     speed = 120.f;
 
-     maxVida = 5;
-     vida = maxVida;
+    maxVida = 5;
+    vida = maxVida;
 
     damageTimer = 0.f;
     damageCooldown = 0.8f;
@@ -78,6 +161,7 @@ void EnemyChaser::update(float deltaTime, Player& player) {
     direction = normalize(direction);
 
     shape.move(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
+    sprite.setPosition(shape.getPosition());
 
     if (shape.getGlobalBounds().intersects(player.getBounds()) &&
         damageTimer >= damageCooldown) {
@@ -91,7 +175,7 @@ void EnemyChaser::draw(sf::RenderWindow& window) {
         return;
     }
 
-    window.draw(shape);
+    window.draw(sprite);
 
     sf::RectangleShape back(sf::Vector2f(44.f, 6.f));
     back.setFillColor(sf::Color(70, 20, 20));
@@ -115,6 +199,7 @@ void EnemyChaser::takeDamage(int damage, sf::Vector2f hitPosition) {
     vida -= damage;
 
     sf::Vector2f knockDirection = shape.getPosition() - hitPosition;
+    sprite.setPosition(shape.getPosition());
     knockDirection = normalize(knockDirection);
 
     float knockbackForce = 45.f;
