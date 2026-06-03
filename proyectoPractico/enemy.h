@@ -32,14 +32,16 @@ struct Projectile {
 class EnemyChaser {
 private:
     sf::CircleShape shape;
+    sf::Sprite sprite;
+
+    static sf::Texture texture;
+    static bool textureLoaded;
+
     float speed;
     int vida;
     int maxVida;
     float damageTimer;
     float damageCooldown;
-    sf::Sprite sprite;
-    static sf::Texture texture;
-    static bool textureLoaded;
 
 public:
     EnemyChaser(sf::Vector2f position);
@@ -49,8 +51,8 @@ public:
 
     void takeDamage(int damage, sf::Vector2f hitPosition);
     bool isDead();
-
     sf::FloatRect getBounds();
+    sf::Vector2f getPosition();
 };
 
 class EnemyShooter {
@@ -77,6 +79,8 @@ public:
     void takeDamage(int damage, sf::Vector2f hitPosition);
     bool isDead();
     sf::FloatRect getBounds();
+    sf::Vector2f getPosition();
+
 };
 
 #endif // ENEMY_H_INCLUDED
