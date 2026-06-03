@@ -53,13 +53,16 @@ int main() {
 
     std::vector<EnemyChaser> chasers;
     std::vector<EnemyShooter> shooters;
+    std::vector<EnemyThrower> throwers;
     std::vector<Medkit> medkits;
 
     chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
     shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
+    throwers.push_back(EnemyThrower(sf::Vector2f(200.f, 500.f)));
 
     sf::Clock spawnChaserClock;
     sf::Clock spawnShooterClock;
+    sf::Clock spawnThrowerClock;
     sf::Clock vacuumDamageClock;
     sf::Clock medkitSpawnClock;
     sf::Clock clock;
@@ -97,6 +100,10 @@ int main() {
                 shooters[i].update(deltaTime, player, aspiradora, window, tileMap);
             }
 
+            for (int i = 0; i < throwers.size(); i++) {
+                throwers[i].update(deltaTime, player, aspiradora, window, tileMap);
+            }
+
             if (vacuumDamageClock.getElapsedTime().asSeconds() >= 0.25f) {
                 bool hitSomething = false;
 
@@ -112,6 +119,13 @@ int main() {
                     if (!shooters[i].isDead() &&
                         aspiradora.getBounds().intersects(shooters[i].getBounds())) {
                         shooters[i].takeDamage(1, aspiradora.getPosition());
+                        hitSomething = true;
+                    }
+                }
+                for (int i = 0; i < throwers.size(); i++) {
+                    if (!throwers[i].isDead() &&
+                        aspiradora.getBounds().intersects(throwers[i].getBounds())) {
+                        throwers[i].takeDamage(1, aspiradora.getPosition());
                         hitSomething = true;
                     }
                 }
@@ -143,6 +157,17 @@ int main() {
                 shooters.end()
             );
 
+            throwers.erase(
+                std::remove_if(
+                    throwers.begin(),
+                    throwers.end(),
+                    [](EnemyThrower& enemy) {
+                        return enemy.isDead();
+                    }
+                ),
+                throwers.end()
+            );
+
             if (spawnChaserClock.getElapsedTime().asSeconds() >= 3.f && chasers.size() < 5) {
                 chasers.push_back(EnemyChaser(randomSpawn(window)));
                 spawnChaserClock.restart();
@@ -151,6 +176,11 @@ int main() {
             if (spawnShooterClock.getElapsedTime().asSeconds() >= 6.f && shooters.size() < 3) {
                 shooters.push_back(EnemyShooter(randomSpawn(window)));
                 spawnShooterClock.restart();
+            }
+
+            if (spawnThrowerClock.getElapsedTime().asSeconds() >= 8.f && throwers.size() < 2) {
+                throwers.push_back(EnemyThrower(randomSpawn(window)));
+                spawnThrowerClock.restart();
             }
 
             if (medkitSpawnClock.getElapsedTime().asSeconds() >= 5.f && medkits.size() < 3) {
@@ -189,15 +219,21 @@ int main() {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
                 player.reset();
 
+                tileMap.loadGroundLayer("maps/map1-groundLayer.csv");
+                tileMap.loadAssetsLayer("maps/map1-assetsLayer.csv");
+
                 chasers.clear();
                 shooters.clear();
+                throwers.clear();
                 medkits.clear();
 
                 chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
                 shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
+                throwers.push_back(EnemyThrower(sf::Vector2f(200.f, 500.f)));
 
                 spawnChaserClock.restart();
                 spawnShooterClock.restart();
+                spawnThrowerClock.restart();
                 vacuumDamageClock.restart();
                 medkitSpawnClock.restart();
 
@@ -226,6 +262,10 @@ int main() {
 
         for (int i = 0; i < shooters.size(); i++) {
             shooters[i].draw(window);
+        }
+
+        for (int i = 0; i < throwers.size(); i++) {
+            throwers[i].draw(window);
         }
 
         player.drawStamina(window);

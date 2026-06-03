@@ -117,6 +117,55 @@ bool Projectile::hitsPlayer(Player& player) {
     return shape.getGlobalBounds().intersects(player.getBounds());
 }
 
+FurnitureProjectile::FurnitureProjectile(
+    sf::Texture& tileset,
+    sf::Vector2f position,
+    sf::Vector2f direction)
+{
+    sprite.setTexture(tileset);
+
+    sprite.setTextureRect(
+        sf::IntRect(384, 0, 32, 32)
+    );
+
+    sprite.setOrigin(16.f, 16.f);
+    sprite.setPosition(position);
+
+    direction = normalize(direction);
+
+    velocity = direction * 250.f;
+}
+
+void FurnitureProjectile::update(float deltaTime)
+{
+    sprite.move(
+        velocity.x * deltaTime,
+        velocity.y * deltaTime
+    );
+}
+
+void FurnitureProjectile::draw(sf::RenderWindow& window)
+{
+    window.draw(sprite);
+}
+
+bool FurnitureProjectile::isOutside(sf::RenderWindow& window)
+{
+    sf::Vector2f pos = sprite.getPosition();
+    sf::Vector2u size = window.getSize();
+
+    return pos.x < 0.f ||
+           pos.y < 0.f ||
+           pos.x > size.x ||
+           pos.y > size.y;
+}
+
+bool FurnitureProjectile::hitsPlayer(Player& player)
+{
+    return sprite.getGlobalBounds()
+        .intersects(player.getBounds());
+}
+
 EnemyChaser::EnemyChaser(sf::Vector2f position) {
     shape.setRadius(22.f);
     shape.setFillColor(sf::Color::Transparent);
@@ -389,5 +438,209 @@ bool EnemyShooter::isDead() {
 }
 
 sf::FloatRect EnemyShooter::getBounds() {
+    return shape.getGlobalBounds();
+}
+
+EnemyThrower::EnemyThrower(sf::Vector2f position)
+{
+    shape.setRadius(24.f);
+    shape.setFillColor(sf::Color::Blue);
+    shape.setOrigin(24.f, 24.f);
+    shape.setPosition(position);
+
+    speed = 80.f;
+
+    throwTimer = 0.f;
+    throwCooldown = 2.f;
+
+    maxVida = 5;
+    vida = maxVida;
+}
+
+void EnemyThrower::update(
+    float deltaTime,
+    Player& player,
+    circle& aspiradora,
+    sf::RenderWindow& window,
+    TileMap& tileMap)
+{
+    throwTimer += deltaTime;
+
+    sf::Vector2i furnitureTile;
+
+    bool foundFurniture =
+        tileMap.findNearestFurniture(
+            shape.getPosition(),
+            furnitureTile
+        );
+
+    if(foundFurniture)
+    {
+        sf::Vector2f furniturePos(
+            furnitureTile.x * 32.f + 16.f,
+            furnitureTile.y * 32.f + 16.f
+        );
+
+        sf::Vector2f direction =
+            normalize(
+                furniturePos - shape.getPosition()
+            );
+
+        shape.move(
+            direction.x * speed * deltaTime,
+            direction.y * speed * deltaTime
+        );
+
+        float distance =
+            vectorLength(
+                furniturePos - shape.getPosition()
+            );
+
+        if(distance < 25.f &&
+           throwTimer >= throwCooldown)
+        {
+            furnitureProjectiles.push_back(
+                FurnitureProjectile(
+                    const_cast<sf::Texture&>(
+                        tileMap.getTileset()
+                    ),
+                    shape.getPosition(),
+                    player.getCenter()
+                        - shape.getPosition()
+                )
+            );
+
+            tileMap.removeFurniture(
+                furnitureTile.x,
+                furnitureTile.y
+            );
+
+            throwTimer = 0.f;
+        }
+    }
+    else
+    {
+        sf::Vector2f direction =
+            normalize(
+                player.getCenter()
+                - shape.getPosition()
+            );
+
+        shape.move(
+            direction.x * speed * deltaTime,
+            direction.y * speed * deltaTime
+        );
+    }
+
+    for(auto& projectile : furnitureProjectiles)
+    {
+        projectile.update(deltaTime);
+    }
+
+    furnitureProjectiles.erase(
+    std::remove_if(
+        furnitureProjectiles.begin(),
+        furnitureProjectiles.end(),
+        [&window, &player, &tileMap](FurnitureProjectile& projectile)
+        {
+            if(tileMap.checkCollision(
+                projectile.sprite.getGlobalBounds()))
+            {
+                return true;
+            }
+
+            if(projectile.hitsPlayer(player))
+            {
+                player.takeDamage(1);
+                return true;
+            }
+
+            return projectile.isOutside(window);
+            }
+        ),
+    furnitureProjectiles.end()
+    );
+}
+
+void EnemyThrower::draw(sf::RenderWindow& window)
+{
+    if(isDead())
+    {
+        return;
+    }
+
+    window.draw(shape);
+
+    for(auto& projectile :
+        furnitureProjectiles)
+    {
+        projectile.draw(window);
+    }
+
+    sf::RectangleShape back(
+        sf::Vector2f(48.f, 6.f));
+
+    back.setFillColor(
+        sf::Color(70,20,20));
+
+    back.setPosition(
+        shape.getPosition().x - 24.f,
+        shape.getPosition().y - 38.f
+    );
+
+    float percent =
+        (float)vida / maxVida;
+
+    sf::RectangleShape bar(
+        sf::Vector2f(
+            48.f * percent,
+            6.f
+        )
+    );
+
+    bar.setFillColor(
+        sf::Color::Red);
+
+    bar.setPosition(
+        back.getPosition());
+
+    window.draw(back);
+    window.draw(bar);
+}
+
+
+void EnemyThrower::takeDamage(int damage, sf::Vector2f hitPosition)
+{
+    if(isDead())
+    {
+        return;
+    }
+
+    vida -= damage;
+
+    sf::Vector2f knockDirection =
+        normalize(
+            shape.getPosition() -
+            hitPosition
+        );
+
+    shape.move(
+        knockDirection.x * 45.f,
+        knockDirection.y * 45.f
+    );
+
+    if(vida < 0)
+    {
+        vida = 0;
+    }
+}
+
+bool EnemyThrower::isDead()
+{
+    return vida <= 0;
+}
+
+sf::FloatRect EnemyThrower::getBounds()
+{
     return shape.getGlobalBounds();
 }

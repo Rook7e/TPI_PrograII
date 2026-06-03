@@ -29,6 +29,22 @@ struct Projectile {
     bool hitsPlayer(Player& player);
 };
 
+struct FurnitureProjectile {
+    sf::Sprite sprite;
+    sf::Vector2f velocity;
+
+    FurnitureProjectile(
+        sf::Texture& tileset,
+        sf::Vector2f position,
+        sf::Vector2f direction
+    );
+
+    void update(float deltaTime);
+    void draw(sf::RenderWindow& window);
+    bool isOutside(sf::RenderWindow& window);
+    bool hitsPlayer(Player& player);
+};
+
 class EnemyChaser {
 private:
     sf::CircleShape shape;
@@ -76,6 +92,42 @@ public:
 
     void takeDamage(int damage, sf::Vector2f hitPosition);
     bool isDead();
+    sf::FloatRect getBounds();
+};
+
+class EnemyThrower {
+private:
+    sf::CircleShape shape;
+
+    sf::Sprite sprite;
+
+    std::vector<FurnitureProjectile> furnitureProjectiles;
+
+    float speed;
+
+    float throwTimer;
+    float throwCooldown;
+
+    int vida;
+    int maxVida;
+
+public:
+    EnemyThrower(sf::Vector2f position);
+
+    void update(
+        float deltaTime,
+        Player& player,
+        circle& aspiradora,
+        sf::RenderWindow& window,
+        TileMap& tileMap
+    );
+
+    void draw(sf::RenderWindow& window);
+
+    void takeDamage(int damage, sf::Vector2f hitPosition);
+
+    bool isDead();
+
     sf::FloatRect getBounds();
 };
 

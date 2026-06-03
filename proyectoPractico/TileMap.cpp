@@ -1,15 +1,22 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include "TileMap.h"
+
 
 
 using namespace std;
 
 TileMap::TileMap() {
 
+    tileSize = 32;
 
+}
 
+const sf::Texture& TileMap::getTileset() const
+{
+    return tileset;
 }
 
 bool TileMap::load() {
@@ -98,7 +105,7 @@ void TileMap::drawMap(sf::RenderWindow& window)
     const int tileRightUpCarpet = 65;
     const int tileLeftDownCarpet = 80;
     const int tileRightDownCarpet = 81;
-    const int tileForniture = 12;
+    const int tileFurniture = 12;
 
 
     sf::Sprite tile;
@@ -153,7 +160,7 @@ void TileMap::drawMap(sf::RenderWindow& window)
         {
             int value = assetsLayer[y][x];
 
-            if (value == tileForniture)
+            if (value == tileFurniture)
             {
                 tile.setTextureRect(sf::IntRect(384, 0, 32, 32));
             }
@@ -164,3 +171,63 @@ void TileMap::drawMap(sf::RenderWindow& window)
         }
     }
 }
+
+bool TileMap::hasFurniture(int x, int y)
+{
+    if(y < 0 || y >= assetsLayer.size())
+        return false;
+
+    if(x < 0 || x >= assetsLayer[y].size())
+        return false;
+
+    return assetsLayer[y][x] == 12;
+}
+
+void TileMap::removeFurniture(int x, int y)
+{
+    if(y < 0 || y >= assetsLayer.size())
+        return;
+
+    if(x < 0 || x >= assetsLayer[y].size())
+        return;
+
+    assetsLayer[y][x] = -1;
+}
+
+bool TileMap::findNearestFurniture(
+    sf::Vector2f position,
+    sf::Vector2i& result)
+{
+    float bestDistance = 999999.f;
+    bool found = false;
+
+    for(int y = 0; y < assetsLayer.size(); y++)
+    {
+        for(int x = 0; x < assetsLayer[y].size(); x++)
+        {
+            if(assetsLayer[y][x] == 12)
+            {
+                sf::Vector2f furniturePos(
+                    x * tileSize + tileSize / 2.f,
+                    y * tileSize + tileSize / 2.f
+                );
+
+                float dx = furniturePos.x - position.x;
+                float dy = furniturePos.y - position.y;
+
+                float distance = std::sqrt(dx * dx + dy * dy);
+
+                if(distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    result.x = x;
+                    result.y = y;
+                    found = true;
+                }
+            }
+        }
+    }
+
+    return found;
+}
+
