@@ -111,12 +111,11 @@ void TileMap::drawMap(sf::RenderWindow& window)
             int value = groundLayer[y][x];
 
 
-            // Piso
+
             if (value == tileFloor)
             {
                 tile.setTextureRect(sf::IntRect(0, 0, 32, 32));
             }
-            // Pared
             else if (value == tileWall)
             {
                 tile.setTextureRect(sf::IntRect(192, 0, 32, 32));
