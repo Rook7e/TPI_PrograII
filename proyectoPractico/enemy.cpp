@@ -30,7 +30,7 @@ Projectile::Projectile(sf::Vector2f position, sf::Vector2f direction) {
     shape.setPosition(position);
 
     if (!textureLoaded) {
-        if (texture.loadFromFile("Ectoplasma.png")) {
+        if (texture.loadFromFile("assets/Ectoplasma.png")) {
             textureLoaded = true;
         } else {
             std::cout << "Error al cargar Ectoplasma.png" << std::endl;
@@ -51,7 +51,7 @@ Projectile::Projectile(sf::Vector2f position, sf::Vector2f direction) {
         sprite.setTextureRect(sf::IntRect(0, 0, frameWidth, frameHeight));
         sprite.setOrigin(frameWidth / 2.f, frameHeight / 2.f);
 
-        float scale = 200.f / frameWidth;
+        float scale = 20.f / frameWidth;
         sprite.setScale(scale, scale);
         sprite.setPosition(position);
     }
@@ -121,7 +121,7 @@ EnemyChaser::EnemyChaser(sf::Vector2f position) {
     shape.setPosition(position);
 
     if (!textureLoaded) {
-        if (!texture.loadFromFile("boo.png")) {
+        if (!texture.loadFromFile("assets/boo.png")) {
             std::cout << "Error al cargar boo.png" << std::endl;
         }
 

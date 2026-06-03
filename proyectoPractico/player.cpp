@@ -2,7 +2,7 @@
 #include <iostream>
 
 Player::Player() {
-    if (!texture.loadFromFile("pj_juego.png")) {
+    if (!texture.loadFromFile("assets/pj_juego.png")) {
         std::cout << "Error al cargar pj_juego.png" << std::endl;
     }
 
