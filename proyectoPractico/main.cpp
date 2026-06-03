@@ -44,7 +44,8 @@ int main() {
     return -1;
     }
 
-    tileMap.loadMapFile("maps/map3.txt");
+    tileMap.loadGroundLayer("maps/map1-groundLayer.csv");
+    tileMap.loadAssetsLayer("maps/map1-assetsLayer.csv");
 
     srand((unsigned)time(NULL));
 
