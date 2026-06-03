@@ -151,7 +151,7 @@ EnemyShooter::EnemyShooter(sf::Vector2f position) {
      vida = maxVida;
 }
 
-void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window) {
+void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window,TileMap& tileMap) {
     if (isDead()) {
         return;
     }
@@ -188,7 +188,12 @@ void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, s
         std::remove_if(
             projectiles.begin(),
             projectiles.end(),
-            [&window, &player, &aspiradora](Projectile& projectile) {
+            [&window, &player, &aspiradora, &tileMap](Projectile& projectile) {
+
+                if (tileMap.checkCollision(projectile.shape.getGlobalBounds())){
+                    return true;
+                }
+
                 if (projectile.shape.getGlobalBounds().intersects(aspiradora.getBounds())) {
                     return true;
                 }

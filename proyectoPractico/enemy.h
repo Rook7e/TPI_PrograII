@@ -6,6 +6,7 @@
 #include <vector>
 #include "Player.h"
 #include "circle.h"
+#include "TileMap.h"
 
 struct Projectile {
     sf::CircleShape shape;
@@ -36,6 +37,7 @@ public:
 
     void takeDamage(int damage, sf::Vector2f hitPosition);
     bool isDead();
+
     sf::FloatRect getBounds();
 };
 
@@ -54,7 +56,7 @@ private:
 public:
     EnemyShooter(sf::Vector2f position);
 
-    void update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window);
+    void update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
     void draw(sf::RenderWindow& window);
 
     void takeDamage(int damage, sf::Vector2f hitPosition);
