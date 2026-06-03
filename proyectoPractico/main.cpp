@@ -53,8 +53,8 @@ int main() {
     return -1;
     }
 
-    tileMap.loadGroundLayer("maps/map1-groundLayer.csv");
-    tileMap.loadAssetsLayer("maps/map1-assetsLayer.csv");
+    tileMap.loadGroundLayer("maps/map2-groundLayer.csv");
+    tileMap.loadAssetsLayer("maps/map2-assetsLayer.csv");
 
     srand((unsigned)time(NULL));
 

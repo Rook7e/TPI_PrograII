@@ -27,7 +27,7 @@ bool TileMap::loadAssetsLayer(const std::string& fileName) {
 bool TileMap::checkCollision(sf::FloatRect bounds) {
     for (int y = 0; y < assetsLayer.size(); y++) {
         for (int x = 0; x < assetsLayer[y].size(); x++) {
-            if (assetsLayer[y][x] == 6 || assetsLayer[y][x] == 12) {
+            if (assetsLayer[y][x] == 6 || assetsLayer[y][x] == 12 || assetsLayer[y][x] == 14|| assetsLayer[y][x] == 4 ) {
                 sf::FloatRect wall(
                     (float)(x * tileSize),
                     (float)(y * tileSize),
@@ -92,13 +92,20 @@ void TileMap::drawMap(sf::RenderWindow& window)
 
     const int tileVoid = -1;
     const int tileFloor = 0;
-    const int tileWall = 6;
-    const int tileCarpet = 49;
-    const int tileLeftUpCarpet = 64;
-    const int tileRightUpCarpet = 65;
-    const int tileLeftDownCarpet = 80;
-    const int tileRightDownCarpet = 81;
-    const int tileForniture = 12;
+    const int tileBlackWall = 6;
+    const int tileRedWall = 4;
+    const int tileRedCarpet = 49;
+    const int tileLeftUpRedCarpet = 64;
+    const int tileRightUpRedCarpet = 65;
+    const int tileLeftDownRedCarpet = 80;
+    const int tileRightDownRedCarpet = 81;
+    const int tileBrownCarpet = 51;
+    const int tileLeftUpBrownCarpet = 66;
+    const int tileRightUpBrownCarpet = 67;
+    const int tileLeftDownBrownCarpet = 82;
+    const int tileRightDownBrownCarpet = 83;
+    const int tileWoodForniture = 12;
+    const int tileBlackForniture = 14;
 
 
     sf::Sprite tile;
@@ -112,35 +119,58 @@ void TileMap::drawMap(sf::RenderWindow& window)
 
 
 
-            if (value == tileFloor)
+            if (value == tileFloor) // Piso
             {
                 tile.setTextureRect(sf::IntRect(0, 0, 32, 32));
             }
-            else if (value == tileWall)
+            else if (value == tileBlackWall) // Black wall
             {
                 tile.setTextureRect(sf::IntRect(192, 0, 32, 32));
             }
-            else if (value == tileCarpet)
+            else if (value == tileRedWall) // Red wall
+            {
+                tile.setTextureRect(sf::IntRect(128, 0, 32, 32));
+            }
+            else if (value == tileRedCarpet) // Red carpet
             {
                 tile.setTextureRect(sf::IntRect(32, 96, 32, 32));
             }
-            else if (value == tileLeftUpCarpet)
+            else if (value == tileLeftUpRedCarpet)
             {
                 tile.setTextureRect(sf::IntRect(0, 128, 32, 32));
             }
-            else if (value == tileRightUpCarpet)
+            else if (value == tileRightUpRedCarpet)
             {
                 tile.setTextureRect(sf::IntRect(32, 128, 32, 32));
             }
-            else if (value == tileLeftDownCarpet)
+            else if (value == tileLeftDownRedCarpet)
             {
                 tile.setTextureRect(sf::IntRect(0, 160, 32, 32));
             }
-            else if (value == tileRightDownCarpet)
+            else if (value == tileRightDownRedCarpet)
             {
                 tile.setTextureRect(sf::IntRect(32, 160, 32, 32));
             }
-
+            else if (value == tileBrownCarpet) // Brown carpet
+            {
+                tile.setTextureRect(sf::IntRect(96, 96, 32, 32));
+            }
+            else if (value == tileLeftUpBrownCarpet)
+            {
+                tile.setTextureRect(sf::IntRect(64, 128, 32, 32));
+            }
+            else if (value == tileRightUpBrownCarpet)
+            {
+                tile.setTextureRect(sf::IntRect(96, 128, 32, 32));
+            }
+            else if (value == tileLeftDownBrownCarpet)
+            {
+                tile.setTextureRect(sf::IntRect(64, 160, 32, 32));
+            }
+            else if (value == tileRightDownBrownCarpet)
+            {
+                tile.setTextureRect(sf::IntRect(96, 160, 32, 32));
+            }
 
             tile.setPosition((float)(x * tileSize), (float)(y * tileSize));
             window.draw(tile);
@@ -153,9 +183,14 @@ void TileMap::drawMap(sf::RenderWindow& window)
         {
             int value = assetsLayer[y][x];
 
-            if (value == tileForniture)
+            if (value == tileWoodForniture)
             {
                 tile.setTextureRect(sf::IntRect(384, 0, 32, 32));
+            }
+
+            if (value == tileBlackForniture)
+            {
+                tile.setTextureRect(sf::IntRect(448, 0, 32, 32));
             }
             else continue;
 
