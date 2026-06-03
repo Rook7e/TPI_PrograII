@@ -8,7 +8,8 @@
 class TileMap {
 private:
     sf::Texture tileset;
-    std::vector<std::vector<int> > map;
+    std::vector<std::vector<int> > groundLayer;
+    std::vector<std::vector<int> > assetsLayer;
     int tileSize;
 
 public:
@@ -17,8 +18,11 @@ public:
     bool load();
     void draw(sf::RenderWindow& window);
     bool checkCollision(sf::FloatRect bounds);
-    bool loadMapFile(const std::string& fileName);
+    //bool loadMapFile(const std::string& fileName);
+    bool loadGroundLayer(const std::string& fileName);
+    bool loadAssetsLayer(const std::string& fileName);
     void drawMap(sf::RenderWindow& window);
+    bool loadLayer(const std::string& fileName, std::vector<std::vector<int>>& layer);
 };
 
 #endif
