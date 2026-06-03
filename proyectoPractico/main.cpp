@@ -10,6 +10,7 @@
 #include "enemy.h"
 #include "TileMap.h"
 #include "Medkit.h"
+#include "mess.h"
 
 using namespace std;
 
@@ -29,6 +30,14 @@ sf::Vector2f randomSpawn(sf::RenderWindow& window) {
 
     return sf::Vector2f(-30.f, (float)(rand() % (int)h));
 }
+
+sf::Vector2f randomMessPosition() {
+    float x = 60.f + (rand() % 680);
+    float y = 60.f + (rand() % 480);
+
+    return sf::Vector2f(x, y);
+}
+
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 600), "Proyecto Practico");
@@ -53,10 +62,15 @@ int main() {
 
     std::vector<EnemyChaser> chasers;
     std::vector<EnemyShooter> shooters;
+    std::vector<mess> messes;
     std::vector<Medkit> medkits;
 
     chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
     shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
+
+    for (int i = 0; i < 12; i++) {
+    messes.push_back(mess(randomMessPosition()));
+}
 
     sf::Clock spawnChaserClock;
     sf::Clock spawnShooterClock;
@@ -88,6 +102,17 @@ int main() {
             player.update(deltaTime);
 
             aspiradora.update(window, player.getCenter());
+
+            messes.erase(
+            std::remove_if(
+                messes.begin(),
+                messes.end(),
+                [&aspiradora](mess& dirt) {
+                    return dirt.getBounds().intersects(aspiradora.getBounds());
+                }
+            ),
+            messes.end()
+        );
 
             for (int i = 0; i < chasers.size(); i++) {
                 chasers[i].update(deltaTime, player);
@@ -121,27 +146,21 @@ int main() {
                 }
             }
 
-            chasers.erase(
-                std::remove_if(
-                    chasers.begin(),
-                    chasers.end(),
-                    [](EnemyChaser& enemy) {
-                        return enemy.isDead();
-                    }
-                ),
-                chasers.end()
-            );
+            for (int i = 0; i < chasers.size(); i++) {
+            if (chasers[i].isDead()) {
+                messes.push_back(mess(chasers[i].getPosition(), 2));
+                chasers.erase(chasers.begin() + i);
+                i--;
+    }
+}
 
-            shooters.erase(
-                std::remove_if(
-                    shooters.begin(),
-                    shooters.end(),
-                    [](EnemyShooter& enemy) {
-                        return enemy.isDead();
-                    }
-                ),
-                shooters.end()
-            );
+            for (int i = 0; i < shooters.size(); i++) {
+            if (shooters[i].isDead()) {
+                messes.push_back(mess(shooters[i].getPosition(), 2));
+                shooters.erase(shooters.begin() + i);
+                i--;
+    }
+}
 
             if (spawnChaserClock.getElapsedTime().asSeconds() >= 3.f && chasers.size() < 5) {
                 chasers.push_back(EnemyChaser(randomSpawn(window)));
@@ -192,6 +211,11 @@ int main() {
                 chasers.clear();
                 shooters.clear();
                 medkits.clear();
+                messes.clear();
+
+                for (int i = 0; i < 12; i++) {
+                    messes.push_back(mess(randomMessPosition()));
+                }
 
                 chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
                 shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
@@ -212,6 +236,10 @@ int main() {
         window.clear(sf::Color::Black);
 
         tileMap.drawMap(window);
+
+        for (int i = 0; i < messes.size(); i++) {
+            messes[i].draw(window);
+}
 
         for (int i = 0; i < medkits.size(); i++) {
             medkits[i].draw(window);
