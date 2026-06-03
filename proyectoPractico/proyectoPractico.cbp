@@ -64,6 +64,8 @@
 		<Unit filename="enemy.cpp" />
 		<Unit filename="enemy.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="mess.cpp" />
+		<Unit filename="mess.h" />
 		<Unit filename="pj_juego.png" />
 		<Unit filename="player.cpp" />
 		<Unit filename="player.h" />
