@@ -207,50 +207,55 @@ int main() {
                 throwers.end()
             );
 
-            if (spawnChaserClock.getElapsedTime().asSeconds() >= 3.f && chasers.size() < 5) {
-                chasers.push_back(EnemyChaser(randomSpawn(window)));
-                spawnChaserClock.restart();
-            }
-
             if (!waitingForCleaning &&
                 spawnShooterClock.getElapsedTime().asSeconds() >= 6.f &&
-                shooters.size() < 3) {
-                shooters.push_back(EnemyShooter(randomSpawn(window)));
-                spawnShooterClock.restart();
-                        }
-
+                shooters.size() < 3)
+                {
+                    shooters.push_back(EnemyShooter(randomSpawn(window)));
+                    spawnShooterClock.restart();
+                }
+            if (!waitingForCleaning &&
+                spawnChaserClock.getElapsedTime().asSeconds() >= 6.f &&
+                chasers.size() < 5)
+                {
+                    chasers.push_back(EnemyChaser(randomSpawn(window)));
+                    spawnChaserClock.restart();
+                }
 
             if (waitingForCleaning &&
                 messes.empty() &&
                 chasers.empty() &&
                 shooters.empty() &&
-                currentMap == 1) {
-                currentMap = 2;
-                loadMap(tileMap, 2);
+                //throwers.empty() && // throwers
+                currentMap == 1)
+                {
+                    currentMap = 2;
+                    loadMap(tileMap, 2);
 
-                enemiesKilled = 0;
-                waitingForCleaning = false;
+                    enemiesKilled = 0;
+                    waitingForCleaning = false;
 
-                chasers.clear();
-                shooters.clear();
-                medkits.clear();
-                messes.clear();
+                    chasers.clear();
+                    shooters.clear();
+                    medkits.clear();
+                    messes.clear();
+                    throwers.clear();
 
-                player.setPosition(sf::Vector2f(100.f, 100.f));
+                    player.setPosition(sf::Vector2f(100.f, 100.f));
 
-                chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
-                shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
+                    chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
+                    shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
 
-                for (int i = 0; i < 12; i++) {
-                    messes.push_back(mess(randomMessPosition()));
+                    for (int i = 0; i < 12; i++) {
+                        messes.push_back(mess(randomMessPosition()));
                 }
 
-                spawnChaserClock.restart();
-                spawnShooterClock.restart();
-                medkitSpawnClock.restart();
-                vacuumDamageClock.restart();
+                    spawnChaserClock.restart();
+                    spawnShooterClock.restart();
+                    medkitSpawnClock.restart();
+                    vacuumDamageClock.restart();
 
-                window.setTitle("Mapa 2");
+                    window.setTitle("Mapa 2");
             }
 
             if (spawnThrowerClock.getElapsedTime().asSeconds() >= 8.f && throwers.size() < 2) {
