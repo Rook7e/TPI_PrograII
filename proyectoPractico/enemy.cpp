@@ -12,6 +12,14 @@ bool Projectile::textureLoaded = false;
 sf::Texture EnemyShooter::shooterTexture;
 bool EnemyShooter::shooterTextureLoaded = false;
 
+sf::Vector2f EnemyChaser::getPosition() {
+    return shape.getPosition();
+}
+
+sf::Vector2f EnemyShooter::getPosition() {
+    return shape.getPosition();
+}
+
 float vectorLength(sf::Vector2f vector) {
     return std::sqrt(vector.x * vector.x + vector.y * vector.y);
 }

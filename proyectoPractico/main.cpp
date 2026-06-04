@@ -10,8 +10,19 @@
 #include "enemy.h"
 #include "TileMap.h"
 #include "Medkit.h"
+#include "mess.h"
 
 using namespace std;
+
+void loadMap(TileMap& tileMap, int mapNumber) {
+    if (mapNumber == 1) {
+        tileMap.loadGroundLayer("maps/map1-groundLayer.csv");
+        tileMap.loadAssetsLayer("maps/map1-assetsLayer.csv");
+    } else if (mapNumber == 2) {
+        tileMap.loadGroundLayer("maps/map2-groundLayer.csv");
+        tileMap.loadAssetsLayer("maps/map2-assetsLayer.csv");
+    }
+}
 
 enum GameState {
     Playing,
@@ -30,6 +41,14 @@ sf::Vector2f randomSpawn(sf::RenderWindow& window) {
     return sf::Vector2f(-30.f, (float)(rand() % (int)h));
 }
 
+sf::Vector2f randomMessPosition() {
+    float x = 60.f + (rand() % 680);
+    float y = 60.f + (rand() % 480);
+
+    return sf::Vector2f(x, y);
+}
+
+
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 600), "Proyecto Practico");
     window.setFramerateLimit(60);
@@ -44,8 +63,7 @@ int main() {
     return -1;
     }
 
-    tileMap.loadGroundLayer("maps/map1-groundLayer.csv");
-    tileMap.loadAssetsLayer("maps/map1-assetsLayer.csv");
+    loadMap(tileMap, 1);
 
     srand((unsigned)time(NULL));
 
@@ -54,11 +72,16 @@ int main() {
     std::vector<EnemyChaser> chasers;
     std::vector<EnemyShooter> shooters;
     std::vector<EnemyThrower> throwers;
+    std::vector<mess> messes;
     std::vector<Medkit> medkits;
 
     chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
     shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
     throwers.push_back(EnemyThrower(sf::Vector2f(200.f, 500.f)));
+
+    for (int i = 0; i < 12; i++) {
+    messes.push_back(mess(randomMessPosition()));
+}
 
     sf::Clock spawnChaserClock;
     sf::Clock spawnShooterClock;
@@ -66,6 +89,11 @@ int main() {
     sf::Clock vacuumDamageClock;
     sf::Clock medkitSpawnClock;
     sf::Clock clock;
+
+    int currentMap = 1;
+    int enemiesKilled = 0;
+    int enemiesNeededForNextMap = 6;
+    bool waitingForCleaning = false;
 
     while (window.isOpen()) {
         float deltaTime = clock.restart().asSeconds();
@@ -91,6 +119,17 @@ int main() {
             player.update(deltaTime);
 
             aspiradora.update(window, player.getCenter());
+
+            messes.erase(
+            std::remove_if(
+                messes.begin(),
+                messes.end(),
+                [&aspiradora](mess& dirt) {
+                    return dirt.getBounds().intersects(aspiradora.getBounds());
+                }
+            ),
+            messes.end()
+        );
 
             for (int i = 0; i < chasers.size(); i++) {
                 chasers[i].update(deltaTime, player);
@@ -135,27 +174,27 @@ int main() {
                 }
             }
 
-            chasers.erase(
-                std::remove_if(
-                    chasers.begin(),
-                    chasers.end(),
-                    [](EnemyChaser& enemy) {
-                        return enemy.isDead();
-                    }
-                ),
-                chasers.end()
-            );
+            for (int i = 0; i < chasers.size(); i++) {
+                if (chasers[i].isDead()) {
+                    messes.push_back(mess(chasers[i].getPosition(), 2));
+                    chasers.erase(chasers.begin() + i);
+                    enemiesKilled++;
+                    i--;
+                }
+            }
 
-            shooters.erase(
-                std::remove_if(
-                    shooters.begin(),
-                    shooters.end(),
-                    [](EnemyShooter& enemy) {
-                        return enemy.isDead();
-                    }
-                ),
-                shooters.end()
-            );
+            for (int i = 0; i < shooters.size(); i++) {
+                if (shooters[i].isDead()) {
+                    messes.push_back(mess(shooters[i].getPosition(), 2));
+                    shooters.erase(shooters.begin() + i);
+                    enemiesKilled++;
+                    i--;
+                }
+            }
+
+            if (enemiesKilled >= enemiesNeededForNextMap) {
+                waitingForCleaning = true;
+            }
 
             throwers.erase(
                 std::remove_if(
@@ -173,9 +212,45 @@ int main() {
                 spawnChaserClock.restart();
             }
 
-            if (spawnShooterClock.getElapsedTime().asSeconds() >= 6.f && shooters.size() < 3) {
+            if (!waitingForCleaning &&
+                spawnShooterClock.getElapsedTime().asSeconds() >= 6.f &&
+                shooters.size() < 3) {
                 shooters.push_back(EnemyShooter(randomSpawn(window)));
                 spawnShooterClock.restart();
+                        }
+
+
+            if (waitingForCleaning &&
+                messes.empty() &&
+                chasers.empty() &&
+                shooters.empty() &&
+                currentMap == 1) {
+                currentMap = 2;
+                loadMap(tileMap, 2);
+
+                enemiesKilled = 0;
+                waitingForCleaning = false;
+
+                chasers.clear();
+                shooters.clear();
+                medkits.clear();
+                messes.clear();
+
+                player.setPosition(sf::Vector2f(100.f, 100.f));
+
+                chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
+                shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
+
+                for (int i = 0; i < 12; i++) {
+                    messes.push_back(mess(randomMessPosition()));
+                }
+
+                spawnChaserClock.restart();
+                spawnShooterClock.restart();
+                medkitSpawnClock.restart();
+                vacuumDamageClock.restart();
+
+                window.setTitle("Mapa 2");
             }
 
             if (spawnThrowerClock.getElapsedTime().asSeconds() >= 8.f && throwers.size() < 2) {
@@ -226,6 +301,11 @@ int main() {
                 shooters.clear();
                 throwers.clear();
                 medkits.clear();
+                messes.clear();
+
+                for (int i = 0; i < 12; i++) {
+                    messes.push_back(mess(randomMessPosition()));
+                }
 
                 chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
                 shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
@@ -239,7 +319,12 @@ int main() {
 
                 window.setTitle("Proyecto Practico");
                 gameState = Playing;
-            }
+
+                currentMap = 1;
+                enemiesKilled = 0;
+                waitingForCleaning = false;
+                loadMap(tileMap, 1);
+                            }
 
             break;
         }
@@ -248,6 +333,10 @@ int main() {
         window.clear(sf::Color::Black);
 
         tileMap.drawMap(window);
+
+        for (int i = 0; i < messes.size(); i++) {
+            messes[i].draw(window);
+}
 
         for (int i = 0; i < medkits.size(); i++) {
             medkits[i].draw(window);
