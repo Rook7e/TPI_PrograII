@@ -188,7 +188,7 @@ void TileMap::drawMap(sf::RenderWindow& window)
                 tile.setTextureRect(sf::IntRect(384, 0, 32, 32));
             }
 
-            if (value == tileBlackForniture)
+            else if (value == tileBlackForniture)
             {
                 tile.setTextureRect(sf::IntRect(448, 0, 32, 32));
             }
