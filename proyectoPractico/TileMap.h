@@ -22,6 +22,17 @@ public:
     bool loadAssetsLayer(const std::string& fileName);
     void drawMap(sf::RenderWindow& window);
     bool loadLayer(const std::string& fileName, std::vector<std::vector<int>>& layer);
+
+    bool hasFurniture(int x, int y);
+    void removeFurniture(int x, int y);
+
+    const sf::Texture& getTileset() const;
+
+    bool findNearestFurniture(
+    sf::Vector2f position,
+    sf::Vector2i& result
+    );
+
 };
 
 #endif
