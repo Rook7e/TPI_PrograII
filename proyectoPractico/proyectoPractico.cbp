@@ -55,10 +55,25 @@
 			<Add directory="$(#sfml)/include" />
 		</Linker>
 		<Unit filename=".gitignore" />
+		<Unit filename="EnemyBase.cpp" />
+		<Unit filename="EnemyBase.h" />
+		<Unit filename="EnemyChaser.cpp" />
+		<Unit filename="EnemyChaser.h" />
+		<Unit filename="EnemyShooter.cpp" />
+		<Unit filename="EnemyShooter.h" />
+		<Unit filename="EnemyThrower.cpp" />
+		<Unit filename="EnemyThrower.h" />
+		<Unit filename="FurnitureProjectile.cpp" />
+		<Unit filename="FurnitureProjectile.h" />
+		<Unit filename="Game.cpp" />
+		<Unit filename="Game.h" />
 		<Unit filename="Medkit.cpp" />
 		<Unit filename="Medkit.h" />
+		<Unit filename="Projectile.cpp" />
+		<Unit filename="Projectile.h" />
 		<Unit filename="TileMap.cpp" />
 		<Unit filename="TileMap.h" />
+		<Unit filename="VectorMath.h" />
 		<Unit filename="circle.cpp" />
 		<Unit filename="circle.h" />
 		<Unit filename="enemy.cpp" />
