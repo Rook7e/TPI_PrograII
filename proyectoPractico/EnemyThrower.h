@@ -11,10 +11,18 @@
 
 class EnemyThrower : public EnemyBase {
 private:
+    sf::Sprite sprite;
+
+    static sf::Texture texture;
+    static bool textureLoaded;
+
     std::vector<FurnitureProjectile> furnitureProjectiles;
 
     float throwTimer;
     float throwCooldown;
+
+protected:
+    void syncSpritePosition();
 
 public:
     EnemyThrower(sf::Vector2f position);
