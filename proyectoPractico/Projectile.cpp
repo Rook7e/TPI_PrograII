@@ -12,7 +12,7 @@ Projectile::Projectile(sf::Vector2f position, sf::Vector2f direction) {
     shape.setPosition(position);
 
     if (!textureLoaded) {
-        if (texture.loadFromFile("assets/Ectoplasma.png")) {
+        if (texture.loadFromFile("assets/Extras/Ectoplasma.png")) {
             textureLoaded = true;
         } else {
             std::cout << "Error al cargar assets/Ectoplasma.png" << std::endl;

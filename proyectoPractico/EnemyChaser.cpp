@@ -10,7 +10,7 @@ EnemyChaser::EnemyChaser(sf::Vector2f position)
     : EnemyBase(position, 22.f, 120.f, 5)
 {
     if (!textureLoaded) {
-        if (texture.loadFromFile("assets/chasser.png")) {
+        if (texture.loadFromFile("assets/Entidades/chasser.png")) {
             textureLoaded = true;
         } else {
             std::cout << "Error al cargar assets/chasser.png" << std::endl;

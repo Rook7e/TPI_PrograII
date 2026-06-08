@@ -38,6 +38,9 @@ private:
     float burstShotTimer;
     float burstShotDelay;
 
+    int burstShotIndex;
+    sf::Vector2f rotateVector(sf::Vector2f vector, float degrees);
+
     sf::Vector2f lastShotDirection;
 
     void updateFacing(sf::Vector2f direction);

@@ -11,10 +11,10 @@ EnemyThrower::EnemyThrower(sf::Vector2f position)
     : EnemyBase(position, 24.f, 80.f, 5)
 {
     if (!textureLoaded) {
-        if (texture.loadFromFile("assets/thrower.png")) {
+        if (texture.loadFromFile("assets/Entidades/thrower.png")) {
             textureLoaded = true;
         } else {
-            std::cout << "Error al cargar assets/thrower.png" << std::endl;
+            std::cout << "Error al cargar assets/Entidades/thrower.png" << std::endl;
         }
     }
 

@@ -4,27 +4,27 @@
 bool AudioManager::load() {
     bool ok = true;
 
-    if (!music.openFromFile("assets/music.wav")) {
+    if (!music.openFromFile("assets/Sonidos/music.wav")) {
         std::cout << "Error al cargar assets/music.wav" << std::endl;
         ok = false;
     }
 
-    if (!hitBuffer.loadFromFile("assets/hit.wav")) {
+    if (!hitBuffer.loadFromFile("assets/Sonidos/hit.wav")) {
         std::cout << "Error al cargar assets/hit.wav" << std::endl;
         ok = false;
     }
 
-    if (!cleanBuffer.loadFromFile("assets/clean.wav")) {
+    if (!cleanBuffer.loadFromFile("assets/Sonidos/clean.wav")) {
         std::cout << "Error al cargar assets/clean.wav" << std::endl;
         ok = false;
     }
 
-    if (!medkitBuffer.loadFromFile("assets/medkit.wav")) {
+    if (!medkitBuffer.loadFromFile("assets/Sonidos/medkit.wav")) {
         std::cout << "Error al cargar assets/medkit.wav" << std::endl;
         ok = false;
     }
 
-    if (!mapChangeBuffer.loadFromFile("assets/mapchange.wav")) {
+    if (!mapChangeBuffer.loadFromFile("assets/Sonidos/mapchange.wav")) {
         std::cout << "Error al cargar assets/mapchange.wav" << std::endl;
         ok = false;
     }

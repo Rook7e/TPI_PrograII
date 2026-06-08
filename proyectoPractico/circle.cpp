@@ -9,7 +9,7 @@ circle::circle() {
     maxDistance = 120.f;
     attachPoint = sf::Vector2f(0.f, 0.f);
 
-    textureLoaded = texture.loadFromFile("assets/puntaAspiradora.png");
+    textureLoaded = texture.loadFromFile("assets/Extras/puntaAspiradora.png");
 
     if (textureLoaded) {
         sprite.setTexture(texture);

@@ -11,10 +11,10 @@ EnemyShooter::EnemyShooter(sf::Vector2f position)
     : EnemyBase(position, 24.f, 90.f, 5)
 {
     if (!shooterTextureLoaded) {
-        if (shooterTexture.loadFromFile("assets/Shooter.png")) {
+        if (shooterTexture.loadFromFile("assets/Entidades/Shooter.png")) {
             shooterTextureLoaded = true;
         } else {
-            std::cout << "Error al cargar assets/Shooter.png" << std::endl;
+            std::cout << "Error al cargar assets/Entidades/Shooter.png" << std::endl;
         }
     }
 
@@ -41,6 +41,7 @@ EnemyShooter::EnemyShooter(sf::Vector2f position)
     recoverDuration = 0.6f;
 
     burstShotsLeft = 0;
+    burstShotIndex = 0;
     burstShotTimer = 0.f;
     burstShotDelay = 0.14f;
 
@@ -63,6 +64,18 @@ void EnemyShooter::updateFacing(sf::Vector2f direction) {
     } else if (direction.x < 0.f) {
         sprite.setScale(-std::abs(sprite.getScale().x), sprite.getScale().y);
     }
+}
+
+sf::Vector2f EnemyShooter::rotateVector(sf::Vector2f vector, float degrees) {
+    float radians = degrees * 3.14159265f / 180.f;
+
+    float cosAngle = std::cos(radians);
+    float sinAngle = std::sin(radians);
+
+    return sf::Vector2f(
+        vector.x * cosAngle - vector.y * sinAngle,
+        vector.x * sinAngle + vector.y * cosAngle
+    );
 }
 
 void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap) {
@@ -98,18 +111,28 @@ void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, s
             }
         }
     } else if (state == ChargingShot) {
-        if (shootTimer >= chargeDuration) {
-            state = BurstShooting;
-            burstShotsLeft = 3;
-            burstShotTimer = burstShotDelay;
-            shootTimer = 0.f;
-            lastShotDirection = player.getCenter() - hitbox.getPosition();
-        }
-    } else if (state == BurstShooting) {
-        burstShotTimer += deltaTime;
+                if (shootTimer >= chargeDuration) {
+                    state = BurstShooting;
+                    burstShotsLeft = 3;
+                    burstShotIndex = 0;
+                    burstShotTimer = burstShotDelay;
+                    shootTimer = 0.f;
+                    lastShotDirection = player.getCenter() - hitbox.getPosition();
+                }
+            } else if (state == BurstShooting) {
+                burstShotTimer += deltaTime;
 
-        if (burstShotsLeft > 0 && burstShotTimer >= burstShotDelay) {
-            projectiles.push_back(Projectile(hitbox.getPosition(), lastShotDirection));
+                if (burstShotsLeft > 0 && burstShotTimer >= burstShotDelay) {
+            float angles[3] = { -12.f, 0.f, 12.f };
+
+            sf::Vector2f shotDirection = rotateVector(
+                lastShotDirection,
+                angles[burstShotIndex]
+            );
+
+            projectiles.push_back(Projectile(hitbox.getPosition(), shotDirection));
+
+            burstShotIndex++;
             burstShotsLeft--;
             burstShotTimer = 0.f;
         }
