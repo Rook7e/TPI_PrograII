@@ -266,3 +266,30 @@ bool TileMap::findNearestFurniture(
     return found;
 }
 
+bool TileMap::hasLineOfSight(sf::Vector2f from, sf::Vector2f to) {
+    sf::Vector2f direction = to - from;
+
+    float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+    if (distance == 0.f) {
+        return true;
+    }
+
+    direction.x /= distance;
+    direction.y /= distance;
+
+    float step = 8.f;
+
+    for (float traveled = 0.f; traveled < distance; traveled += step) {
+        sf::Vector2f point = from + direction * traveled;
+
+        sf::FloatRect rayPoint(point.x - 2.f, point.y - 2.f, 4.f, 4.f);
+
+        if (checkCollision(rayPoint)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+

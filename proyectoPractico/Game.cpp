@@ -7,6 +7,8 @@ Game::Game()
     : window(sf::VideoMode(800, 600), "Proyecto Practico")
 {
     window.setFramerateLimit(60);
+    audio.load();
+    audio.playMusic();
     std::srand((unsigned)std::time(NULL));
 
     if (!tileMap.load()) {
@@ -179,6 +181,7 @@ void Game::changeToMap2() {
     vacuumDamageClock.restart();
 
     window.setTitle("Mapa 2");
+    audio.playMapChange();
 }
 
 sf::Vector2f Game::randomSpawn() {
@@ -225,6 +228,8 @@ void Game::updatePlayer(float deltaTime) {
 }
 
 void Game::updateMessCleaning() {
+    int messCountBefore = messes.size();
+
     messes.erase(
         std::remove_if(
             messes.begin(),
@@ -235,6 +240,10 @@ void Game::updateMessCleaning() {
         ),
         messes.end()
     );
+
+    if (messes.size() < messCountBefore) {
+        audio.playClean();
+    }
 }
 
 void Game::updateEnemies(float deltaTime) {
@@ -283,8 +292,9 @@ void Game::applyVacuumDamage() {
     }
 
     if (hitSomething) {
+        audio.playHit();
         vacuumDamageClock.restart();
-    }
+}
 }
 
 void Game::removeDeadEnemies() {
@@ -368,6 +378,7 @@ void Game::updateMedkits() {
             [this](Medkit& medkit) {
                 if (medkit.getBounds().intersects(player.getBounds())) {
                     player.heal(1);
+                    audio.playMedkit();
                     return true;
                 }
 

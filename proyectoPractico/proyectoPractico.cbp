@@ -55,6 +55,8 @@
 			<Add directory="$(#sfml)/include" />
 		</Linker>
 		<Unit filename=".gitignore" />
+		<Unit filename="AudioManager.cpp" />
+		<Unit filename="AudioManager.h" />
 		<Unit filename="EnemyBase.cpp" />
 		<Unit filename="EnemyBase.h" />
 		<Unit filename="EnemyChaser.cpp" />
