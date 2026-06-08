@@ -31,8 +31,11 @@ public:
     bool findNearestFurniture(
     sf::Vector2f position,
     sf::Vector2i& result
+
+
     );
 
+    bool hasLineOfSight(sf::Vector2f from, sf::Vector2f to);
 };
 
 #endif

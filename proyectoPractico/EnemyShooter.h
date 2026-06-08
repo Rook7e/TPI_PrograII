@@ -9,6 +9,13 @@
 #include "circle.h"
 #include "TileMap.h"
 
+enum ShooterState {
+    Repositioning,
+    ChargingShot,
+    BurstShooting,
+    ShotRecovering
+};
+
 class EnemyShooter : public EnemyBase {
 private:
     sf::Sprite sprite;
@@ -18,9 +25,26 @@ private:
 
     std::vector<Projectile> projectiles;
 
+    ShooterState state;
+
     float desiredDistance;
     float shootTimer;
     float shootCooldown;
+
+    float chargeDuration;
+    float recoverDuration;
+
+    int burstShotsLeft;
+    float burstShotTimer;
+    float burstShotDelay;
+
+    int burstShotIndex;
+    sf::Vector2f rotateVector(sf::Vector2f vector, float degrees);
+
+    sf::Vector2f lastShotDirection;
+
+    void updateFacing(sf::Vector2f direction);
+    void updateProjectiles(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
 
 protected:
     void syncSpritePosition();

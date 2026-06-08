@@ -11,6 +11,7 @@
 #include "TileMap.h"
 #include "Medkit.h"
 #include "mess.h"
+#include "AudioManager.h"
 
 enum GameState {
     Playing,
@@ -24,6 +25,7 @@ private:
     Player player;
     circle aspiradora;
     TileMap tileMap;
+    AudioManager audio;
 
     std::vector<EnemyChaser> chasers;
     std::vector<EnemyShooter> shooters;

@@ -5,6 +5,13 @@
 #include "EnemyBase.h"
 #include "Player.h"
 
+enum ChaserState {
+    Chasing,
+    ChargingDash,
+    Dashing,
+    Recovering
+};
+
 class EnemyChaser : public EnemyBase {
 private:
     sf::Sprite sprite;
@@ -14,6 +21,20 @@ private:
 
     float damageTimer;
     float damageCooldown;
+
+    ChaserState state;
+    sf::Vector2f dashDirection;
+
+    float stateTimer;
+    float dashCooldownTimer;
+
+    float dashSpeed;
+    float chargeDuration;
+    float dashDuration;
+    float recoverDuration;
+    float dashCooldown;
+
+    void updateFacing(sf::Vector2f direction);
 
 protected:
     void syncSpritePosition();

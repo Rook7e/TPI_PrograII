@@ -11,10 +11,10 @@ EnemyShooter::EnemyShooter(sf::Vector2f position)
     : EnemyBase(position, 24.f, 90.f, 5)
 {
     if (!shooterTextureLoaded) {
-        if (shooterTexture.loadFromFile("assets/Shooter.png")) {
+        if (shooterTexture.loadFromFile("assets/Entidades/Shooter.png")) {
             shooterTextureLoaded = true;
         } else {
-            std::cout << "Error al cargar assets/Shooter.png" << std::endl;
+            std::cout << "Error al cargar assets/Entidades/Shooter.png" << std::endl;
         }
     }
 
@@ -33,12 +33,49 @@ EnemyShooter::EnemyShooter(sf::Vector2f position)
     }
 
     desiredDistance = 220.f;
+
     shootTimer = 0.f;
-    shootCooldown = 1.5f;
+    shootCooldown = 1.6f;
+
+    chargeDuration = 0.45f;
+    recoverDuration = 0.6f;
+
+    burstShotsLeft = 0;
+    burstShotIndex = 0;
+    burstShotTimer = 0.f;
+    burstShotDelay = 0.14f;
+
+    lastShotDirection = sf::Vector2f(0.f, 0.f);
+
+    state = Repositioning;
 }
 
 void EnemyShooter::syncSpritePosition() {
     sprite.setPosition(hitbox.getPosition());
+}
+
+void EnemyShooter::updateFacing(sf::Vector2f direction) {
+    if (!shooterTextureLoaded) {
+        return;
+    }
+
+    if (direction.x > 0.f) {
+        sprite.setScale(std::abs(sprite.getScale().x), sprite.getScale().y);
+    } else if (direction.x < 0.f) {
+        sprite.setScale(-std::abs(sprite.getScale().x), sprite.getScale().y);
+    }
+}
+
+sf::Vector2f EnemyShooter::rotateVector(sf::Vector2f vector, float degrees) {
+    float radians = degrees * 3.14159265f / 180.f;
+
+    float cosAngle = std::cos(radians);
+    float sinAngle = std::sin(radians);
+
+    return sf::Vector2f(
+        vector.x * cosAngle - vector.y * sinAngle,
+        vector.x * sinAngle + vector.y * cosAngle
+    );
 }
 
 void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap) {
@@ -46,37 +83,86 @@ void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, s
         return;
     }
 
+    shootTimer += deltaTime;
+
     sf::Vector2f playerCenter = player.getCenter();
     sf::Vector2f directionToPlayer = playerCenter - hitbox.getPosition();
+    sf::Vector2f direction = normalize(directionToPlayer);
     float distance = vectorLength(directionToPlayer);
 
-    sf::Vector2f direction = normalize(directionToPlayer);
+    bool hasVision = tileMap.hasLineOfSight(hitbox.getPosition(), playerCenter);
 
-    if (distance > desiredDistance + 30.f) {
-        hitbox.move(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
-    }
+    if (state == Repositioning) {
+        if (distance > desiredDistance + 30.f) {
+            hitbox.move(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
+        } else if (distance < desiredDistance - 30.f) {
+            hitbox.move(-direction.x * speed * deltaTime, -direction.y * speed * deltaTime);
+        }
 
-    if (distance < desiredDistance - 30.f) {
-        hitbox.move(-direction.x * speed * deltaTime, -direction.y * speed * deltaTime);
-    }
+        if (hasVision &&
+            distance <= desiredDistance + 60.f &&
+            shootTimer >= shootCooldown) {
+            state = ChargingShot;
+            shootTimer = 0.f;
+            lastShotDirection = directionToPlayer;
 
-    syncSpritePosition();
+            if (shooterTextureLoaded) {
+                sprite.setColor(sf::Color(140, 220, 255));
+            }
+        }
+    } else if (state == ChargingShot) {
+                if (shootTimer >= chargeDuration) {
+                    state = BurstShooting;
+                    burstShotsLeft = 3;
+                    burstShotIndex = 0;
+                    burstShotTimer = burstShotDelay;
+                    shootTimer = 0.f;
+                    lastShotDirection = player.getCenter() - hitbox.getPosition();
+                }
+            } else if (state == BurstShooting) {
+                burstShotTimer += deltaTime;
 
-    if (shooterTextureLoaded) {
-        if (directionToPlayer.x > 0.f) {
-            sprite.setScale(std::abs(sprite.getScale().x), sprite.getScale().y);
-        } else if (directionToPlayer.x < 0.f) {
-            sprite.setScale(-std::abs(sprite.getScale().x), sprite.getScale().y);
+                if (burstShotsLeft > 0 && burstShotTimer >= burstShotDelay) {
+            float angles[3] = { -12.f, 0.f, 12.f };
+
+            sf::Vector2f shotDirection = rotateVector(
+                lastShotDirection,
+                angles[burstShotIndex]
+            );
+
+            projectiles.push_back(Projectile(hitbox.getPosition(), shotDirection));
+
+            burstShotIndex++;
+            burstShotsLeft--;
+            burstShotTimer = 0.f;
+        }
+
+        if (burstShotsLeft <= 0) {
+            state = ShotRecovering;
+            shootTimer = 0.f;
+
+            if (shooterTextureLoaded) {
+                sprite.setColor(sf::Color(180, 180, 180));
+            }
+        }
+    } else if (state == ShotRecovering) {
+        if (shootTimer >= recoverDuration) {
+            state = Repositioning;
+            shootTimer = 0.f;
+
+            if (shooterTextureLoaded) {
+                sprite.setColor(sf::Color::White);
+            }
         }
     }
 
-    shootTimer += deltaTime;
+    syncSpritePosition();
+    updateFacing(directionToPlayer);
 
-    if (shootTimer >= shootCooldown) {
-        projectiles.push_back(Projectile(hitbox.getPosition(), directionToPlayer));
-        shootTimer = 0.f;
-    }
+    updateProjectiles(deltaTime, player, aspiradora, window, tileMap);
+}
 
+void EnemyShooter::updateProjectiles(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap) {
     for (int i = 0; i < projectiles.size(); i++) {
         projectiles[i].update(deltaTime);
     }
