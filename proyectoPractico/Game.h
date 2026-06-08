@@ -12,10 +12,12 @@
 #include "Medkit.h"
 #include "mess.h"
 #include "AudioManager.h"
+#include "MainMenu.h"
 
 enum GameState {
     Playing,
-    GameOver
+    GameOver,
+    MainMenuState
 };
 
 class Game {
@@ -26,6 +28,7 @@ private:
     circle aspiradora;
     TileMap tileMap;
     AudioManager audio;
+    MainMenu mainMenu;
 
     std::vector<EnemyChaser> chasers;
     std::vector<EnemyShooter> shooters;
