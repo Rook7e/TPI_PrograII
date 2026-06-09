@@ -35,6 +35,11 @@ EnemyThrower::EnemyThrower(sf::Vector2f position)
 
     throwTimer = 0.f;
     throwCooldown = 2.f;
+    damageTimer = 0.f;
+    damageCooldown = 0.8f;
+
+    targetingFurniture = false;
+    targetFurnitureTile = sf::Vector2i(-1, -1);
 }
 
 void EnemyThrower::syncSpritePosition() {
@@ -47,15 +52,30 @@ void EnemyThrower::update(float deltaTime, Player& player, circle& aspiradora, s
     }
 
     throwTimer += deltaTime;
+    damageTimer += deltaTime;
 
     sf::Vector2i furnitureTile;
 
-    bool foundFurniture = tileMap.findNearestFurniture(hitbox.getPosition(), furnitureTile);
+    if (!targetingFurniture){
+    sf::Vector2i furnitureTile;
 
-    if (foundFurniture) {
-        sf::Vector2f furniturePos(
-            furnitureTile.x * 32.f + 16.f,
-            furnitureTile.y * 32.f + 16.f
+        if (tileMap.findFurnitureInLine(hitbox.getPosition(), player.getCenter(),furnitureTile)){
+            targetFurnitureTile = furnitureTile;
+            targetingFurniture = true;
+        }
+    }
+
+    if (targetingFurniture) {
+
+        if (!tileMap.hasFurniture(targetFurnitureTile.x, targetFurnitureTile.y)){
+            targetingFurniture = false;
+        }
+
+        else{
+
+            sf::Vector2f furniturePos(
+            targetFurnitureTile.x * 32.f + 16.f,
+            targetFurnitureTile.y * 32.f + 16.f
         );
 
         sf::Vector2f direction = normalize(furniturePos - hitbox.getPosition());
@@ -65,23 +85,39 @@ void EnemyThrower::update(float deltaTime, Player& player, circle& aspiradora, s
 
         float distance = vectorLength(furniturePos - hitbox.getPosition());
 
-        if (distance < 25.f && throwTimer >= throwCooldown) {
-            furnitureProjectiles.push_back(
-                FurnitureProjectile(
-                    tileMap.getTileset(),
-                    hitbox.getPosition(),
-                    player.getCenter() - hitbox.getPosition()
-                )
-            );
+            if (distance < 25.f && throwTimer >= throwCooldown) {
 
-            tileMap.removeFurniture(furnitureTile.x, furnitureTile.y);
-            throwTimer = 0.f;
+                int furnitureId = tileMap.getFurnitureId(targetFurnitureTile.x, targetFurnitureTile.y);
+
+                furnitureProjectiles.push_back(
+                    FurnitureProjectile(
+                        tileMap.getTileset(),
+                        hitbox.getPosition(),
+                        player.getCenter() - hitbox.getPosition(),
+                        furnitureId
+                    )
+                );
+
+                tileMap.removeFurniture(targetFurnitureTile.x, targetFurnitureTile.y);
+                targetingFurniture = false;
+                throwTimer = 0.f;
+
+
+            }
+
         }
     } else {
         sf::Vector2f direction = normalize(player.getCenter() - hitbox.getPosition());
 
         hitbox.move(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
         syncSpritePosition();
+
+    if (hitbox.getGlobalBounds().intersects(player.getBounds()) &&
+        damageTimer >= damageCooldown) {
+        player.takeDamage(1);
+        damageTimer = 0.f;
+    }
+
     }
 
     for (int i = 0; i < furnitureProjectiles.size(); i++) {

@@ -12,7 +12,8 @@ struct FurnitureProjectile {
     FurnitureProjectile(
         const sf::Texture& tileset,
         sf::Vector2f position,
-        sf::Vector2f direction
+        sf::Vector2f direction,
+        int furnitureId
     );
 
     void update(float deltaTime);

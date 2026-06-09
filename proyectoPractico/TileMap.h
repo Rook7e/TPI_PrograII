@@ -31,11 +31,18 @@ public:
     bool findNearestFurniture(
     sf::Vector2f position,
     sf::Vector2i& result
-
-
     );
 
+    int getFurnitureId(int x, int y);
+
     bool hasLineOfSight(sf::Vector2f from, sf::Vector2f to);
+
+    bool findFurnitureInLine(
+    sf::Vector2f throwerPos,
+    sf::Vector2f playerPos,
+    sf::Vector2i& result
+    );
+
 };
 
 #endif
