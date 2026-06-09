@@ -32,6 +32,8 @@ public:
 
     void update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
     void draw(sf::RenderWindow& window);
+    bool holdingFurniture;
+    int carriedFurnitureId;
     bool targetingFurniture;
     sf::Vector2i targetFurnitureTile;
 };
