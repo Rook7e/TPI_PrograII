@@ -4,10 +4,20 @@
 FurnitureProjectile::FurnitureProjectile(
     const sf::Texture& tileset,
     sf::Vector2f position,
-    sf::Vector2f direction)
+    sf::Vector2f direction,
+    int furnitureId)
 {
     sprite.setTexture(tileset);
-    sprite.setTextureRect(sf::IntRect(384, 0, 32, 32));
+
+    if(furnitureId == 12)
+    {
+        sprite.setTextureRect(sf::IntRect(384, 0, 32, 32));
+    }
+    else if(furnitureId == 14)
+    {
+        sprite.setTextureRect(sf::IntRect(448, 0, 32, 32));
+    }
+
     sprite.setOrigin(16.f, 16.f);
     sprite.setPosition(position);
 

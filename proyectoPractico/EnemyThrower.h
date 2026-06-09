@@ -21,6 +21,9 @@ private:
     float throwTimer;
     float throwCooldown;
 
+    float damageTimer;
+    float damageCooldown;
+
 protected:
     void syncSpritePosition();
 
@@ -29,6 +32,8 @@ public:
 
     void update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
     void draw(sf::RenderWindow& window);
+    bool targetingFurniture;
+    sf::Vector2i targetFurnitureTile;
 };
 
 #endif

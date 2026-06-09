@@ -207,6 +207,17 @@ void TileMap::drawMap(sf::RenderWindow& window)
     }
 }
 
+int TileMap::getFurnitureId(int x, int y)
+{
+    if(y < 0 || y >= assetsLayer.size())
+        return -1;
+
+    if(x < 0 || x >= assetsLayer[y].size())
+        return -1;
+
+    return assetsLayer[y][x];
+}
+
 bool TileMap::hasFurniture(int x, int y)
 {
     if(y < 0 || y >= assetsLayer.size())
@@ -215,7 +226,7 @@ bool TileMap::hasFurniture(int x, int y)
     if(x < 0 || x >= assetsLayer[y].size())
         return false;
 
-    return assetsLayer[y][x] == 12;
+    return assetsLayer[y][x] == 12 || assetsLayer[y][x] == 14;
 }
 
 void TileMap::removeFurniture(int x, int y)
@@ -240,7 +251,7 @@ bool TileMap::findNearestFurniture(
     {
         for(int x = 0; x < assetsLayer[y].size(); x++)
         {
-            if(assetsLayer[y][x] == 12)
+            if(assetsLayer[y][x] == 12 || assetsLayer[y][x] == 14)
             {
                 sf::Vector2f furniturePos(
                     x * tileSize + tileSize / 2.f,
@@ -293,3 +304,33 @@ bool TileMap::hasLineOfSight(sf::Vector2f from, sf::Vector2f to) {
     return true;
 }
 
+bool TileMap::findFurnitureInLine(sf::Vector2f throwerPos, sf::Vector2f playerPos, sf::Vector2i& result) {
+    sf::Vector2f direction = playerPos - throwerPos;
+
+    float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+    if (distance == 0.f) {
+        return true;
+    }
+
+    direction.x /= distance;
+    direction.y /= distance;
+
+    float step = 8.f;
+
+    for (float traveled = 0.f; traveled < distance; traveled += step) {
+        sf::Vector2f point = throwerPos + direction * traveled;
+
+        int tileX = point.x / tileSize;
+        int tileY = point.y / tileSize;
+
+        if(hasFurniture(tileX, tileY))
+        {
+            result.x = tileX;
+            result.y = tileY;
+            return true;
+        }
+    }
+
+    return false;
+}

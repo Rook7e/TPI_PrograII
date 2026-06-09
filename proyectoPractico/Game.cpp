@@ -316,21 +316,14 @@ void Game::removeDeadEnemies() {
         }
     }
 
-    throwers.erase(
-        std::remove_if(
-            throwers.begin(),
-            throwers.end(),
-            [this](EnemyThrower& enemy) {
-                if (enemy.isDead()) {
-                    enemiesKilled++;
-                    return true;
-                }
-
-                return false;
-            }
-        ),
-        throwers.end()
-    );
+    for (int i = 0; i < throwers.size(); i++) {
+        if (throwers[i].isDead()) {
+            messes.push_back(mess(throwers[i].getPosition(), 2));
+            throwers.erase(throwers.begin() + i);
+            enemiesKilled++;
+            i--;
+        }
+    }
 }
 
 void Game::checkMapProgress() {
