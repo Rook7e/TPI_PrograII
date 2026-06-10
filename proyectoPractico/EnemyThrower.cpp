@@ -117,7 +117,7 @@ void EnemyThrower::update(float deltaTime, Player& player, circle& aspiradora, s
         if (throwTimer >= throwCooldown && tileMap.hasLineOfSight(hitbox.getPosition(),player.getCenter())){
 
             furnitureProjectiles.push_back(FurnitureProjectile(
-                                                               tileMap.getTileset(),
+                                                               tileMap.getBuildingTileset(),
                                                                hitbox.getPosition(),
                                                                player.getCenter() - hitbox.getPosition(),
                                                                carriedFurnitureId

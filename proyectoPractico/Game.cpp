@@ -4,7 +4,7 @@
 #include <ctime>
 
 Game::Game()
-    : window(sf::VideoMode(800, 600), "Proyecto Practico")
+    : window(sf::VideoMode(1152, 864), "Proyecto Practico")
 {
     window.setFramerateLimit(60);
     audio.load();
@@ -142,10 +142,10 @@ void Game::draw() {
 
 void Game::loadMap(int mapNumber) {
     if (mapNumber == 1) {
-        tileMap.loadGroundLayer("maps/map1-groundLayer.csv");
+        tileMap.loadGroundLayer("maps/map1-buildingLayer.csv");
         tileMap.loadAssetsLayer("maps/map1-assetsLayer.csv");
     } else if (mapNumber == 2) {
-        tileMap.loadGroundLayer("maps/map2-groundLayer.csv");
+        tileMap.loadGroundLayer("maps/map2-buildingLayer.csv");
         tileMap.loadAssetsLayer("maps/map2-assetsLayer.csv");
     }
 }
