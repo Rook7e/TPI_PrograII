@@ -16,14 +16,15 @@ Game::Game()
     }
 
     gameState = MainMenuState;
-    currentMap = 1;
     enemiesKilled = 0;
     enemiesNeededForNextMap = 6;
     waitingForCleaning = false;
 
-    loadMap(1);
-    spawnInitialEnemies();
-    spawnInitialMess();
+    currentRoomX = 1;
+    currentRoomY = 1;
+
+    setupRooms();
+    enterRoom(currentRoomX, currentRoomY);
 }
 
 void Game::run() {
@@ -36,6 +37,130 @@ void Game::run() {
     }
 }
 
+void Game::setupRooms() {
+    rooms.resize(3);
+    for (int y = 0; y < 3; y++) {
+        rooms[y].resize(3);
+    }
+
+    rooms[1][1] = {
+        "maps/map1-buildingLayer.csv",
+        "maps/map1-assetsLayer.csv",
+        false,
+        false,
+        true, true, true, true
+    };
+
+    rooms[1][0] = {
+        "maps/map2-buildingLayer.csv",
+        "maps/map2-assetsLayer.csv",
+        false,
+        false,
+        false, false, false, true
+    };
+
+    rooms[0][1] = {
+        "maps/map3-buildingLayer.csv",
+        "maps/map3-assetsLayer.csv",
+        false,
+        false,
+        false, true, false, false
+    };
+
+    rooms[1][2] = {
+        "maps/map4-buildingLayer.csv",
+        "maps/map4-assetsLayer.csv",
+        false,
+        false,
+        false, false, true, true
+    };
+
+    rooms[2][1] = {
+        "maps/map5-buildingLayer.csv",
+        "maps/map5-assetsLayer.csv",
+        false,
+        false,
+        false, false, false, true
+    };
+}
+
+void Game::enterRoom(int x, int y) {
+    currentRoomX = x;
+    currentRoomY = y;
+
+    RoomInfo& room = rooms[currentRoomY][currentRoomX];
+
+    tileMap.loadGroundLayer(room.groundFile);
+    tileMap.loadAssetsLayer(room.assetsFile);
+
+    chasers.clear();
+    shooters.clear();
+    throwers.clear();
+    medkits.clear();
+    messes.clear();
+
+    if (!room.cleared) {
+        spawnInitialEnemies();
+        spawnInitialMess();
+    }
+
+    room.visited = true;
+}
+
+void Game::checkRoomCleared() {
+    RoomInfo& room = rooms[currentRoomY][currentRoomX];
+
+    if (!room.cleared &&
+        chasers.empty() &&
+        shooters.empty() &&
+        throwers.empty() &&
+        messes.empty()) {
+        room.cleared = true;
+        window.setTitle("Sala limpia");
+    }
+}
+
+void Game::checkRoomTransition() {
+    RoomInfo& room = rooms[currentRoomY][currentRoomX];
+
+    sf::Vector2f pos = player.getPosition();
+
+    if (pos.x < 0.f) {
+        if (room.cleared && room.doorLeft && currentRoomX > 0) {
+            enterRoom(currentRoomX - 1, currentRoomY);
+            player.setPosition(sf::Vector2f(1100.f, pos.y));
+        } else {
+            player.setPosition(sf::Vector2f(20.f, pos.y));
+        }
+    }
+
+    if (pos.x > 1152.f) {
+        if (room.cleared && room.doorRight && currentRoomX < 2) {
+            enterRoom(currentRoomX + 1, currentRoomY);
+            player.setPosition(sf::Vector2f(50.f, pos.y));
+        } else {
+            player.setPosition(sf::Vector2f(1130.f, pos.y));
+        }
+    }
+
+    if (pos.y < 0.f) {
+        if (room.cleared && room.doorUp && currentRoomY > 0) {
+            enterRoom(currentRoomX, currentRoomY - 1);
+            player.setPosition(sf::Vector2f(pos.x, 810.f));
+        } else {
+            player.setPosition(sf::Vector2f(pos.x, 20.f));
+        }
+    }
+
+    if (pos.y > 864.f) {
+        if (room.cleared && room.doorDown && currentRoomY < 2) {
+            enterRoom(currentRoomX, currentRoomY + 1);
+            player.setPosition(sf::Vector2f(pos.x, 50.f));
+        } else {
+            player.setPosition(sf::Vector2f(pos.x, 840.f));
+        }
+    }
+}
 void Game::processEvents() {
     sf::Event event;
 
@@ -83,9 +208,8 @@ void Game::updatePlaying(float deltaTime) {
     applyVacuumDamage();
     removeDeadEnemies();
 
-    checkMapProgress();
-    updateSpawns();
-    checkMapChange();
+    checkRoomCleared();
+    checkRoomTransition();
     updateMedkits();
 
     if (player.isDead()) {
@@ -144,21 +268,16 @@ void Game::loadMap(int mapNumber) {
     if (mapNumber == 1) {
         tileMap.loadGroundLayer("maps/map1-buildingLayer.csv");
         tileMap.loadAssetsLayer("maps/map1-assetsLayer.csv");
-    } else if (mapNumber == 2) {
-        tileMap.loadGroundLayer("maps/map2-buildingLayer.csv");
-        tileMap.loadAssetsLayer("maps/map2-assetsLayer.csv");
+    } else if (mapNumber == 6) {
+        tileMap.loadGroundLayer("maps/map6-buildingLayer.csv");
+        tileMap.loadAssetsLayer("maps/map6-assetsLayer.csv");
     }
 }
 
 void Game::resetGame() {
     player.reset();
 
-    currentMap = 1;
-    enemiesKilled = 0;
-    waitingForCleaning = false;
     gameState = Playing;
-
-    loadMap(1);
 
     chasers.clear();
     shooters.clear();
@@ -166,8 +285,11 @@ void Game::resetGame() {
     medkits.clear();
     messes.clear();
 
-    spawnInitialEnemies();
-    spawnInitialMess();
+    setupRooms();
+
+    currentRoomX = 1;
+    currentRoomY = 1;
+    enterRoom(currentRoomX, currentRoomY);
 
     spawnChaserClock.restart();
     spawnShooterClock.restart();
@@ -202,7 +324,7 @@ void Game::changeToMap2() {
     medkitSpawnClock.restart();
     vacuumDamageClock.restart();
 
-    window.setTitle("Mapa 2");
+    window.setTitle("Piso 2");
     audio.playMapChange();
 }
 
@@ -227,7 +349,11 @@ sf::Vector2f Game::randomMessPosition() {
 
 void Game::spawnInitialEnemies() {
     chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
+    chasers.push_back(EnemyChaser(sf::Vector2f(300.f, 250.f)));
+
     shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
+    shooters.push_back(EnemyShooter(sf::Vector2f(900.f, 300.f)));
+
     throwers.push_back(EnemyThrower(sf::Vector2f(200.f, 500.f)));
 }
 
@@ -355,22 +481,25 @@ void Game::checkMapProgress() {
 }
 
 void Game::updateSpawns() {
-    if (!waitingForCleaning &&
-        spawnShooterClock.getElapsedTime().asSeconds() >= 6.f &&
+    RoomInfo& room = rooms[currentRoomY][currentRoomX];
+
+    if (room.cleared) {
+        return;
+    }
+
+    if (spawnShooterClock.getElapsedTime().asSeconds() >= 6.f &&
         shooters.size() < 3) {
         shooters.push_back(EnemyShooter(randomSpawn()));
         spawnShooterClock.restart();
     }
 
-    if (!waitingForCleaning &&
-        spawnChaserClock.getElapsedTime().asSeconds() >= 6.f &&
+    if (spawnChaserClock.getElapsedTime().asSeconds() >= 6.f &&
         chasers.size() < 5) {
         chasers.push_back(EnemyChaser(randomSpawn()));
         spawnChaserClock.restart();
     }
 
-    if (!waitingForCleaning &&
-        spawnThrowerClock.getElapsedTime().asSeconds() >= 8.f &&
+    if (spawnThrowerClock.getElapsedTime().asSeconds() >= 8.f &&
         throwers.size() < 2) {
         throwers.push_back(EnemyThrower(randomSpawn()));
         spawnThrowerClock.restart();

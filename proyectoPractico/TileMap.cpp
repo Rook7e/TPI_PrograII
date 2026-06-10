@@ -41,7 +41,7 @@ bool TileMap::loadAssetsLayer(const std::string& fileName) {
 bool TileMap::checkCollision(sf::FloatRect bounds) {
     for (int y = 0; y < assetsLayer.size(); y++) {
         for (int x = 0; x < assetsLayer[y].size(); x++) {
-            if (assetsLayer[y][x] == 6 || assetsLayer[y][x] == 12 || assetsLayer[y][x] == 14|| assetsLayer[y][x] == 4 ) {
+            if (assetsLayer[y][x] == 6 || assetsLayer[y][x] == 12 || assetsLayer[y][x] == 14|| assetsLayer[y][x] == 4 || assetsLayer[y][x] == 2) {
                 sf::FloatRect wall(
                     (float)(x * tileSize),
                     (float)(y * tileSize),
@@ -106,6 +106,7 @@ void TileMap::drawMap(sf::RenderWindow& window)
 
     const int tileVoid = -1;
     const int tileFloor = 0;
+    const int tilePurpleWall = 2;
     const int tileBlackWall = 6;
     const int tileRedWall = 4;
     const int tileRedCarpet = 49;
@@ -136,6 +137,10 @@ void TileMap::drawMap(sf::RenderWindow& window)
             if (value == tileFloor) // Piso
             {
                 tile.setTextureRect(sf::IntRect(0, 0, 32, 32));
+            }
+            else if (value == tilePurpleWall) // Purple wall
+            {
+                tile.setTextureRect(sf::IntRect(64, 0, 32, 32));
             }
             else if (value == tileBlackWall) // Black wall
             {

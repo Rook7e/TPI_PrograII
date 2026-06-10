@@ -47,29 +47,36 @@ void circle::update(sf::RenderWindow& window, sf::Vector2f playerCenter) {
         );
     } else {
         shape.setPosition(mouseWorld);
-
     }
+
     sprite.setPosition(shape.getPosition());
 
     sf::Vector2f aimDirection = shape.getPosition() - playerCenter;
-
     float angle = std::atan2(aimDirection.y, aimDirection.x) * 180.f / 3.14159265f;
 
     sprite.setRotation(angle);
+
+    manguera.update(playerCenter, shape.getPosition());
 }
 
 void circle::draw(sf::RenderWindow& window) {
-    sf::Vertex hose[] = {
-        sf::Vertex(attachPoint, sf::Color::White),
-        sf::Vertex(shape.getPosition(), sf::Color::White)
-    };
+    manguera.draw(window);
 
-    window.draw(hose, 2, sf::Lines);
+    sf::CircleShape connector(7.f);
+    connector.setOrigin(7.f, 7.f);
+    connector.setFillColor(sf::Color(45, 45, 52));
+
+    connector.setPosition(attachPoint);
+    window.draw(connector);
+
+    connector.setPosition(shape.getPosition());
+    window.draw(connector);
+
     if (textureLoaded) {
-    window.draw(sprite);
-} else {
-    window.draw(shape);
-}
+        window.draw(sprite);
+    } else {
+        window.draw(shape);
+    }
 }
 
 sf::FloatRect circle::getBounds() {

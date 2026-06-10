@@ -3,6 +3,7 @@
 
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "MangueraAspiradora.h"
 
 class circle {
 private:
@@ -13,6 +14,8 @@ private:
     sf::Sprite sprite;
     sf::Texture texture;
     bool textureLoaded;
+
+    MangueraAspiradora manguera;
 
 public:
     circle();
