@@ -15,7 +15,7 @@ Game::Game()
         window.close();
     }
 
-    gameState = Playing;
+    gameState = MainMenuState;
     currentMap = 1;
     enemiesKilled = 0;
     enemiesNeededForNextMap = 6;
@@ -39,15 +39,31 @@ void Game::run() {
 void Game::processEvents() {
     sf::Event event;
 
-    while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
+        while (window.pollEvent(event)) {
+
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+
+        if (gameState == MainMenuState) {
+        MenuAction action = mainMenu.handleEvent(event, window);
+
+        if (action == MenuStart) {
+            gameState = Playing;
+        } else if (action == MenuQuit) {
             window.close();
         }
+    }
+
     }
 }
 
 void Game::update(float deltaTime) {
     switch (gameState) {
+
+    case MainMenuState:
+         break;
+
     case Playing:
         updatePlaying(deltaTime);
         break;
@@ -85,6 +101,12 @@ void Game::updateGameOver() {
 }
 
 void Game::draw() {
+
+    if (gameState == MainMenuState) {
+    mainMenu.draw(window);
+    window.display();
+    return;
+}
     window.clear(sf::Color::Black);
 
     tileMap.drawMap(window);
