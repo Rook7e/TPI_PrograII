@@ -71,6 +71,8 @@
 		<Unit filename="Game.h" />
 		<Unit filename="MainMenu.cpp" />
 		<Unit filename="MainMenu.h" />
+		<Unit filename="MangueraAspiradora.cpp" />
+		<Unit filename="MangueraAspiradora.h" />
 		<Unit filename="Medkit.cpp" />
 		<Unit filename="Medkit.h" />
 		<Unit filename="Projectile.cpp" />
