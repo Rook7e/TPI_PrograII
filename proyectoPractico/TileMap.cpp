@@ -14,13 +14,20 @@ TileMap::TileMap() {
 
 }
 
-const sf::Texture& TileMap::getTileset() const
+const sf::Texture& TileMap::getBuildingTileset() const
 {
-    return tileset;
+    return buildingTileset;
+}
+
+const sf::Texture& TileMap::getFurnitureTileset() const
+{
+    return furnitureTileset;
 }
 
 bool TileMap::load() {
-    return tileset.loadFromFile("assets/32x32/A2_32x32.png");
+    bool okTileset1 = buildingTileset.loadFromFile("assets/32x32/A2_32x32.png");
+    bool okTileset2 = furnitureTileset.loadFromFile("assets/32x32/B32x32.png");
+    return okTileset1 && okTileset2;
 }
 
 bool TileMap::loadGroundLayer(const std::string& fileName) {
@@ -111,12 +118,12 @@ void TileMap::drawMap(sf::RenderWindow& window)
     const int tileRightUpBrownCarpet = 67;
     const int tileLeftDownBrownCarpet = 82;
     const int tileRightDownBrownCarpet = 83;
-    const int tileWoodForniture = 12;
-    const int tileBlackForniture = 14;
+    const int tileStatue = 12;
+    const int tileBrokenStatue = 14;
 
 
     sf::Sprite tile;
-    tile.setTexture(tileset);
+    tile.setTexture(buildingTileset);
 
     for (size_t y = 0; y < groundLayer.size(); y++)
     {
@@ -184,20 +191,22 @@ void TileMap::drawMap(sf::RenderWindow& window)
         }
     }
 
+    tile.setTexture(furnitureTileset);
+
     for (size_t y = 0; y < assetsLayer.size(); y++)
     {
         for (size_t x = 0; x < assetsLayer[y].size(); x++)
         {
             int value = assetsLayer[y][x];
 
-            if (value == tileWoodForniture)
+            if (value == tileStatue)
             {
-                tile.setTextureRect(sf::IntRect(384, 0, 32, 32));
+                tile.setTextureRect(sf::IntRect(32, 352, 64, 96));
             }
 
-            else if (value == tileBlackForniture)
+            else if (value == tileBrokenStatue)
             {
-                tile.setTextureRect(sf::IntRect(448, 0, 32, 32));
+                tile.setTextureRect(sf::IntRect(96, 352, 64, 96));
             }
             else continue;
 
