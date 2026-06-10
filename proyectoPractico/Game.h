@@ -13,6 +13,20 @@
 #include "mess.h"
 #include "AudioManager.h"
 #include "MainMenu.h"
+#include <string>
+
+struct RoomInfo {
+    std::string groundFile;
+    std::string assetsFile;
+
+    bool visited;
+    bool cleared;
+
+    bool doorUp;
+    bool doorDown;
+    bool doorLeft;
+    bool doorRight;
+};
 
 enum GameState {
     Playing,
@@ -75,6 +89,17 @@ private:
     void updateMedkits();
     void checkMapProgress();
     void checkMapChange();
+
+
+    std::vector<std::vector<RoomInfo> > rooms;
+
+    int currentRoomX;
+    int currentRoomY;
+
+    void setupRooms();
+    void enterRoom(int x, int y);
+    void checkRoomCleared();
+    void checkRoomTransition();
 
 public:
     Game();
