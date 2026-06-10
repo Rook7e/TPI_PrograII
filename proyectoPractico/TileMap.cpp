@@ -334,3 +334,20 @@ bool TileMap::findFurnitureInLine(sf::Vector2f throwerPos, sf::Vector2f playerPo
 
     return false;
 }
+
+bool TileMap::hasAnyFurniture()
+{
+    for (int y = 0; y < assetsLayer.size(); y++)
+    {
+        for (int x = 0; x < assetsLayer[y].size(); x++)
+        {
+            if (assetsLayer[y][x] == 12 ||
+                assetsLayer[y][x] == 14)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}

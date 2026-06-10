@@ -42,6 +42,7 @@ public:
     sf::Vector2f playerPos,
     sf::Vector2i& result
     );
+    bool hasAnyFurniture();
 
 };
 
