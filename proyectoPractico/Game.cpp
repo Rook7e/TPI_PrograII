@@ -48,12 +48,36 @@ void Game::setupRooms() {
         "maps/map1-assetsLayer.csv",
         false,
         false,
-        false, false, true, false
+        true, true, true, true
     };
 
     rooms[1][0] = {
         "maps/map2-buildingLayer.csv",
         "maps/map2-assetsLayer.csv",
+        false,
+        false,
+        false, false, false, true
+    };
+
+    rooms[0][1] = {
+        "maps/map3-buildingLayer.csv",
+        "maps/map3-assetsLayer.csv",
+        false,
+        false,
+        false, true, false, false
+    };
+
+    rooms[1][2] = {
+        "maps/map4-buildingLayer.csv",
+        "maps/map4-assetsLayer.csv",
+        false,
+        false,
+        false, false, true, true
+    };
+
+    rooms[2][1] = {
+        "maps/map5-buildingLayer.csv",
+        "maps/map5-assetsLayer.csv",
         false,
         false,
         false, false, false, true
@@ -244,9 +268,9 @@ void Game::loadMap(int mapNumber) {
     if (mapNumber == 1) {
         tileMap.loadGroundLayer("maps/map1-buildingLayer.csv");
         tileMap.loadAssetsLayer("maps/map1-assetsLayer.csv");
-    } else if (mapNumber == 2) {
-        tileMap.loadGroundLayer("maps/map2-buildingLayer.csv");
-        tileMap.loadAssetsLayer("maps/map2-assetsLayer.csv");
+    } else if (mapNumber == 6) {
+        tileMap.loadGroundLayer("maps/map6-buildingLayer.csv");
+        tileMap.loadAssetsLayer("maps/map6-assetsLayer.csv");
     }
 }
 
@@ -300,7 +324,7 @@ void Game::changeToMap2() {
     medkitSpawnClock.restart();
     vacuumDamageClock.restart();
 
-    window.setTitle("Mapa 2");
+    window.setTitle("Piso 2");
     audio.playMapChange();
 }
 
