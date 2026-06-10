@@ -69,6 +69,8 @@
 		<Unit filename="FurnitureProjectile.h" />
 		<Unit filename="Game.cpp" />
 		<Unit filename="Game.h" />
+		<Unit filename="MainMenu.cpp" />
+		<Unit filename="MainMenu.h" />
 		<Unit filename="Medkit.cpp" />
 		<Unit filename="Medkit.h" />
 		<Unit filename="Projectile.cpp" />
@@ -78,6 +80,7 @@
 		<Unit filename="VectorMath.h" />
 		<Unit filename="circle.cpp" />
 		<Unit filename="circle.h" />
+		<Unit filename="consts.cpp" />
 		<Unit filename="enemy.cpp" />
 		<Unit filename="enemy.h" />
 		<Unit filename="main.cpp" />
