@@ -14,13 +14,20 @@ TileMap::TileMap() {
 
 }
 
-const sf::Texture& TileMap::getTileset() const
+const sf::Texture& TileMap::getBuildingTileset() const
 {
-    return tileset;
+    return buildingTileset;
+}
+
+const sf::Texture& TileMap::getFurnitureTileset() const
+{
+    return furnitureTileset;
 }
 
 bool TileMap::load() {
-    return tileset.loadFromFile("assets/32x32/A2_32x32.png");
+    bool okTileset1 = buildingTileset.loadFromFile("assets/32x32/A2_32x32.png");
+    bool okTileset2 = furnitureTileset.loadFromFile("assets/32x32/B32x32.png");
+    return okTileset1 && okTileset2;
 }
 
 bool TileMap::loadGroundLayer(const std::string& fileName) {
@@ -111,12 +118,12 @@ void TileMap::drawMap(sf::RenderWindow& window)
     const int tileRightUpBrownCarpet = 67;
     const int tileLeftDownBrownCarpet = 82;
     const int tileRightDownBrownCarpet = 83;
-    const int tileWoodForniture = 12;
-    const int tileBlackForniture = 14;
+    const int tileStatue = 12;
+    const int tileBrokenStatue = 14;
 
 
     sf::Sprite tile;
-    tile.setTexture(tileset);
+    tile.setTexture(buildingTileset);
 
     for (size_t y = 0; y < groundLayer.size(); y++)
     {
@@ -184,20 +191,22 @@ void TileMap::drawMap(sf::RenderWindow& window)
         }
     }
 
+    tile.setTexture(furnitureTileset);
+
     for (size_t y = 0; y < assetsLayer.size(); y++)
     {
         for (size_t x = 0; x < assetsLayer[y].size(); x++)
         {
             int value = assetsLayer[y][x];
 
-            if (value == tileWoodForniture)
+            if (value == tileStatue)
             {
-                tile.setTextureRect(sf::IntRect(384, 0, 32, 32));
+                tile.setTextureRect(sf::IntRect(32, 352, 64, 96));
             }
 
-            else if (value == tileBlackForniture)
+            else if (value == tileBrokenStatue)
             {
-                tile.setTextureRect(sf::IntRect(448, 0, 32, 32));
+                tile.setTextureRect(sf::IntRect(96, 352, 64, 96));
             }
             else continue;
 
@@ -205,6 +214,17 @@ void TileMap::drawMap(sf::RenderWindow& window)
             window.draw(tile);
         }
     }
+}
+
+int TileMap::getFurnitureId(int x, int y)
+{
+    if(y < 0 || y >= assetsLayer.size())
+        return -1;
+
+    if(x < 0 || x >= assetsLayer[y].size())
+        return -1;
+
+    return assetsLayer[y][x];
 }
 
 bool TileMap::hasFurniture(int x, int y)
@@ -215,7 +235,7 @@ bool TileMap::hasFurniture(int x, int y)
     if(x < 0 || x >= assetsLayer[y].size())
         return false;
 
-    return assetsLayer[y][x] == 12;
+    return assetsLayer[y][x] == 12 || assetsLayer[y][x] == 14;
 }
 
 void TileMap::removeFurniture(int x, int y)
@@ -240,7 +260,7 @@ bool TileMap::findNearestFurniture(
     {
         for(int x = 0; x < assetsLayer[y].size(); x++)
         {
-            if(assetsLayer[y][x] == 12)
+            if(assetsLayer[y][x] == 12 || assetsLayer[y][x] == 14)
             {
                 sf::Vector2f furniturePos(
                     x * tileSize + tileSize / 2.f,
@@ -266,3 +286,77 @@ bool TileMap::findNearestFurniture(
     return found;
 }
 
+bool TileMap::hasLineOfSight(sf::Vector2f from, sf::Vector2f to) {
+    sf::Vector2f direction = to - from;
+
+    float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+    if (distance == 0.f) {
+        return true;
+    }
+
+    direction.x /= distance;
+    direction.y /= distance;
+
+    float step = 8.f;
+
+    for (float traveled = 0.f; traveled < distance; traveled += step) {
+        sf::Vector2f point = from + direction * traveled;
+
+        sf::FloatRect rayPoint(point.x - 2.f, point.y - 2.f, 4.f, 4.f);
+
+        if (checkCollision(rayPoint)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool TileMap::findFurnitureInLine(sf::Vector2f throwerPos, sf::Vector2f playerPos, sf::Vector2i& result) {
+    sf::Vector2f direction = playerPos - throwerPos;
+
+    float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+    if (distance == 0.f) {
+        return true;
+    }
+
+    direction.x /= distance;
+    direction.y /= distance;
+
+    float step = 8.f;
+
+    for (float traveled = 0.f; traveled < distance; traveled += step) {
+        sf::Vector2f point = throwerPos + direction * traveled;
+
+        int tileX = point.x / tileSize;
+        int tileY = point.y / tileSize;
+
+        if(hasFurniture(tileX, tileY))
+        {
+            result.x = tileX;
+            result.y = tileY;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool TileMap::hasAnyFurniture()
+{
+    for (int y = 0; y < assetsLayer.size(); y++)
+    {
+        for (int x = 0; x < assetsLayer[y].size(); x++)
+        {
+            if (assetsLayer[y][x] == 12 ||
+                assetsLayer[y][x] == 14)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}

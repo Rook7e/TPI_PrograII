@@ -20,9 +20,9 @@ mess::mess(sf::Vector2f position, int type) {
     hasSprite = false;
 
     if (!triedLoad) {
-        texture1Loaded = texture1.loadFromFile("assets/mess.png");
-        texture2Loaded = texture2.loadFromFile("assets/mess2.png");
-        ghostTextureLoaded = ghostTexture.loadFromFile("assets/cum.png");
+        texture1Loaded = texture1.loadFromFile("assets/Extras/mess.png");
+        texture2Loaded = texture2.loadFromFile("assets/Extras/mess2.png");
+        ghostTextureLoaded = ghostTexture.loadFromFile("assets/Extras/cum.png");
 
         if (!texture1Loaded) {
             std::cout << "Error al cargar assets/mess.png" << std::endl;

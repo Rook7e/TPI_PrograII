@@ -7,7 +7,8 @@
 
 class TileMap {
 private:
-    sf::Texture tileset;
+    sf::Texture buildingTileset;
+    sf::Texture furnitureTileset;
     std::vector<std::vector<int> > groundLayer;
     std::vector<std::vector<int> > assetsLayer;
     int tileSize;
@@ -26,12 +27,24 @@ public:
     bool hasFurniture(int x, int y);
     void removeFurniture(int x, int y);
 
-    const sf::Texture& getTileset() const;
+    const sf::Texture& getBuildingTileset() const;
+    const sf::Texture& getFurnitureTileset() const;
 
     bool findNearestFurniture(
     sf::Vector2f position,
     sf::Vector2i& result
     );
+
+    int getFurnitureId(int x, int y);
+
+    bool hasLineOfSight(sf::Vector2f from, sf::Vector2f to);
+
+    bool findFurnitureInLine(
+    sf::Vector2f throwerPos,
+    sf::Vector2f playerPos,
+    sf::Vector2i& result
+    );
+    bool hasAnyFurniture();
 
 };
 
