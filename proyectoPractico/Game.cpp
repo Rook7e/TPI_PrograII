@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <string>
 
 Game::Game()
     : window(sf::VideoMode(1152, 864), "Proyecto Practico")
@@ -20,11 +21,92 @@ Game::Game()
     enemiesNeededForNextMap = 6;
     waitingForCleaning = false;
 
+    currentFloor = 1;
+    trapdoorActive = false;
+    setupTrapdoor();
+
     currentRoomX = 1;
     currentRoomY = 1;
 
     setupRooms();
     enterRoom(currentRoomX, currentRoomY);
+}
+
+void Game::setupTrapdoor() {
+    trapdoor.setSize(sf::Vector2f(54.f, 54.f));
+    trapdoor.setOrigin(27.f, 27.f);
+    trapdoor.setFillColor(sf::Color(55, 35, 20));
+    trapdoor.setOutlineThickness(3.f);
+    trapdoor.setOutlineColor(sf::Color(110, 80, 45));
+    trapdoor.setPosition(576.f, 432.f);
+}
+
+void Game::updateTrapdoor() {
+    if (!trapdoorActive) {
+        return;
+    }
+
+    if (trapdoor.getGlobalBounds().intersects(player.getBounds())) {
+        goToNextFloor();
+    }
+}
+
+void Game::goToNextFloor() {
+    currentFloor++;
+
+    trapdoorActive = false;
+
+    chasers.clear();
+    shooters.clear();
+    throwers.clear();
+    bosses.clear();
+    medkits.clear();
+    messes.clear();
+
+    setupRooms();
+
+    currentRoomX = 1;
+    currentRoomY = 1;
+
+    player.setPosition(sf::Vector2f(576.f, 432.f));
+
+    enterRoom(currentRoomX, currentRoomY);
+
+    spawnChaserClock.restart();
+    spawnShooterClock.restart();
+    spawnThrowerClock.restart();
+    vacuumDamageClock.restart();
+    medkitSpawnClock.restart();
+
+    window.setTitle("Piso " + std::to_string(currentFloor));
+}
+
+bool Game::isBossRoom(int x, int y) {
+    return x == 1 && y == 0;
+}
+
+bool Game::areNormalRoomsCleared() {
+    for (int y = 0; y < rooms.size(); y++) {
+        for (int x = 0; x < rooms[y].size(); x++) {
+            if (rooms[y][x].groundFile == "") {
+                continue;
+            }
+
+            if (isBossRoom(x, y)) {
+                continue;
+            }
+
+            if (!rooms[y][x].cleared) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void Game::spawnBoss() {
+    bosses.push_back(EnemyBoss(sf::Vector2f(576.f, 360.f)));
 }
 
 void Game::run() {
@@ -80,7 +162,7 @@ void Game::setupRooms() {
         "maps/map5-assetsLayer.csv",
         false,
         false,
-        false, false, false, true
+        true, false, false, false
     };
 }
 
@@ -96,12 +178,18 @@ void Game::enterRoom(int x, int y) {
     chasers.clear();
     shooters.clear();
     throwers.clear();
+    bosses.clear();
     medkits.clear();
     messes.clear();
 
     if (!room.cleared) {
-        spawnInitialEnemies();
-        spawnInitialMess();
+        if (isBossRoom(currentRoomX, currentRoomY)) {
+            spawnBoss();
+            window.setTitle("Jefe");
+        } else {
+            spawnInitialEnemies();
+            spawnInitialMess();
+        }
     }
 
     room.visited = true;
@@ -114,11 +202,17 @@ void Game::checkRoomCleared() {
         chasers.empty() &&
         shooters.empty() &&
         throwers.empty() &&
+        bosses.empty() &&
         messes.empty()) {
         room.cleared = true;
         window.setTitle("Sala limpia");
+
+        if (isBossRoom(currentRoomX, currentRoomY)) {
+            trapdoorActive = true;
+        }
     }
 }
+
 
 void Game::checkRoomTransition() {
     RoomInfo& room = rooms[currentRoomY][currentRoomX];
@@ -144,8 +238,16 @@ void Game::checkRoomTransition() {
     }
 
     if (pos.y < 0.f) {
-        if (room.cleared && room.doorUp && currentRoomY > 0) {
-            enterRoom(currentRoomX, currentRoomY - 1);
+        int nextX = currentRoomX;
+        int nextY = currentRoomY - 1;
+
+        bool canEnterBossRoom = !isBossRoom(nextX, nextY) || areNormalRoomsCleared();
+
+        if (room.cleared &&
+            room.doorUp &&
+            currentRoomY > 0 &&
+            canEnterBossRoom) {
+            enterRoom(nextX, nextY);
             player.setPosition(sf::Vector2f(pos.x, 810.f));
         } else {
             player.setPosition(sf::Vector2f(pos.x, 20.f));
@@ -210,6 +312,7 @@ void Game::updatePlaying(float deltaTime) {
 
     checkRoomCleared();
     checkRoomTransition();
+    updateTrapdoor();
     updateMedkits();
 
     if (player.isDead()) {
@@ -235,6 +338,10 @@ void Game::draw() {
 
     tileMap.drawMap(window);
 
+    if (trapdoorActive) {
+    window.draw(trapdoor);
+}
+
     for (int i = 0; i < messes.size(); i++) {
         messes[i].draw(window);
     }
@@ -258,6 +365,10 @@ void Game::draw() {
         throwers[i].draw(window);
     }
 
+    for (int i = 0; i < bosses.size(); i++) {
+    bosses[i].draw(window);
+}
+
     player.drawStamina(window);
     player.drawLife(window);
 
@@ -279,11 +390,15 @@ void Game::resetGame() {
 
     gameState = Playing;
 
+    currentFloor = 1;
+    trapdoorActive = false;
+
     chasers.clear();
     shooters.clear();
     throwers.clear();
     medkits.clear();
     messes.clear();
+    bosses.clear();
 
     setupRooms();
 
@@ -349,10 +464,10 @@ sf::Vector2f Game::randomMessPosition() {
 
 void Game::spawnInitialEnemies() {
     chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
-    chasers.push_back(EnemyChaser(sf::Vector2f(300.f, 250.f)));
+
 
     shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
-    shooters.push_back(EnemyShooter(sf::Vector2f(900.f, 300.f)));
+
 
     throwers.push_back(EnemyThrower(sf::Vector2f(200.f, 500.f)));
 }
@@ -406,6 +521,9 @@ void Game::updateEnemies(float deltaTime) {
     for (int i = 0; i < throwers.size(); i++) {
         throwers[i].update(deltaTime, player, aspiradora, window, tileMap);
     }
+    for (int i = 0; i < bosses.size(); i++) {
+    bosses[i].update(deltaTime, player, aspiradora, window, tileMap);
+    }
 }
 
 void Game::applyVacuumDamage() {
@@ -439,10 +557,20 @@ void Game::applyVacuumDamage() {
         }
     }
 
+
+    for (int i = 0; i < bosses.size(); i++) {
+        if (!bosses[i].isDead() &&
+            aspiradora.getBounds().intersects(bosses[i].getBounds())) {
+            bosses[i].takeDamage(1, aspiradora.getPosition());
+            hitSomething = true;
+        }
+    }
+
     if (hitSomething) {
         audio.playHit();
         vacuumDamageClock.restart();
 }
+
 }
 
 void Game::removeDeadEnemies() {
@@ -472,6 +600,14 @@ void Game::removeDeadEnemies() {
             i--;
         }
     }
+
+    for (int i = 0; i < bosses.size(); i++) {
+        if (bosses[i].isDead()) {
+            messes.push_back(mess(bosses[i].getPosition(), 2));
+            bosses.erase(bosses.begin() + i);
+            i--;
+    }
+}
 }
 
 void Game::checkMapProgress() {

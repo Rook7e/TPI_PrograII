@@ -9,5 +9,6 @@
 #include "EnemyChaser.h"
 #include "EnemyShooter.h"
 #include "EnemyThrower.h"
+#include "EnemyBoss.h"
 
 #endif

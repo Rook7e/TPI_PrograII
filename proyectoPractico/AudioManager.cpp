@@ -35,7 +35,7 @@ bool AudioManager::load() {
     mapChangeSound.setBuffer(mapChangeBuffer);
 
     music.setLoop(true);
-    music.setVolume(35.f);
+    music.setVolume(5.f);
 
     hitSound.setVolume(60.f);
     cleanSound.setVolume(45.f);
