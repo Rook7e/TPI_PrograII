@@ -22,7 +22,7 @@ EnemyBoss::EnemyBoss(sf::Vector2f position)
         sprite.setTexture(texture);
 
         sf::Vector2u textureSize = texture.getSize();
-        float scale = 72.f / textureSize.x;
+        float scale = 144.f / textureSize.x;
 
         sprite.setOrigin(textureSize.x / 2.f, textureSize.y / 2.f);
         sprite.setScale(scale, scale);
@@ -37,21 +37,31 @@ EnemyBoss::EnemyBoss(sf::Vector2f position)
     damageCooldown = 0.7f;
 
     dashTimer = 0.f;
-    dashCooldown = 3.f;
-    dashDuration = 0.35f;
-    dashSpeed = 360.f;
+    dashCooldown = 2.4f;
+    dashDuration = 0.28f;
+    dashSpeed = 380.f;
     dashing = false;
     dashDirection = sf::Vector2f(0.f, 0.f);
 
     shootTimer = 0.f;
-    shootCooldown = 2.2f;
+    shootCooldown = 1.4f;
     burstShotsLeft = 0;
     burstShotTimer = 0.f;
-    burstShotDelay = 0.14f;
+    burstShotDelay = 0.04f;
     lastShotDirection = sf::Vector2f(0.f, 0.f);
 
     throwTimer = 0.f;
     throwCooldown = 4.f;
+
+    state = BossMoving;
+    stateTimer = 0.f;
+
+    chargeDuration = 0.5f;
+    recoverDuration = 0.7f;
+
+    fanShotCount = 20;
+    fanShotIndex = 0;
+    fanAngle = 100.f;
 }
 
 void EnemyBoss::syncSpritePosition() {
@@ -91,34 +101,93 @@ void EnemyBoss::update(float deltaTime, Player& player, circle& aspiradora, sf::
     dashTimer += deltaTime;
     shootTimer += deltaTime;
     throwTimer += deltaTime;
+    stateTimer += deltaTime;
 
     sf::Vector2f directionToPlayer = player.getCenter() - hitbox.getPosition();
     sf::Vector2f direction = normalize(directionToPlayer);
     float distance = vectorLength(directionToPlayer);
 
-    if (!dashing) {
-        if (distance > 120.f) {
+    if (state == BossMoving) {
+        if (distance > 180.f) {
             hitbox.move(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
         }
 
-        if (dashTimer >= dashCooldown && distance < 360.f) {
-            dashing = true;
+        if (dashTimer >= dashCooldown &&
+            tileMap.hasLineOfSight(hitbox.getPosition(), player.getCenter())) {
+            sf::Vector2f sideDirection(-direction.y, direction.x);
+
+            if (std::rand() % 2 == 0) {
+                sideDirection.x *= -1.f;
+                sideDirection.y *= -1.f;
+            }
+
+            dashDirection = sideDirection;
             dashTimer = 0.f;
-            dashDirection = direction;
+            stateTimer = 0.f;
+            state = BossSideDashing;
 
             if (textureLoaded) {
-                sprite.setColor(sf::Color(255, 120, 120));
+                sprite.setColor(sf::Color(255, 160, 120));
             }
         }
-    } else {
+    } else if (state == BossSideDashing) {
         hitbox.move(
             dashDirection.x * dashSpeed * deltaTime,
             dashDirection.y * dashSpeed * deltaTime
         );
 
-        if (dashTimer >= dashDuration) {
-            dashing = false;
-            dashTimer = 0.f;
+        if (stateTimer >= dashDuration) {
+            state = BossChargingShot;
+            stateTimer = 0.f;
+            lastShotDirection = player.getCenter() - hitbox.getPosition();
+
+            if (textureLoaded) {
+                sprite.setColor(sf::Color(140, 220, 255));
+            }
+        }
+    } else if (state == BossChargingShot) {
+        lastShotDirection = player.getCenter() - hitbox.getPosition();
+
+        if (stateTimer >= chargeDuration) {
+            state = BossBurstShooting;
+            stateTimer = 0.f;
+            fanShotIndex = 0;
+            burstShotTimer = burstShotDelay;
+
+            if (textureLoaded) {
+                sprite.setColor(sf::Color(255, 255, 255));
+            }
+        }
+    } else if (state == BossBurstShooting) {
+        burstShotTimer += deltaTime;
+
+        if (fanShotIndex < fanShotCount && burstShotTimer >= burstShotDelay) {
+            float startAngle = -fanAngle / 2.f;
+            float angleStep = fanAngle / (fanShotCount - 1);
+            float angle = startAngle + angleStep * fanShotIndex;
+
+            sf::Vector2f shotDirection = rotateVector(lastShotDirection, angle);
+
+            projectiles.push_back(
+                Projectile(hitbox.getPosition(), shotDirection)
+            );
+
+            fanShotIndex++;
+            burstShotTimer = 0.f;
+        }
+
+        if (fanShotIndex >= fanShotCount) {
+            state = BossRecovering;
+            stateTimer = 0.f;
+
+            if (textureLoaded) {
+                sprite.setColor(sf::Color(180, 180, 180));
+            }
+        }
+    } else if (state == BossRecovering) {
+        if (stateTimer >= recoverDuration) {
+            state = BossMoving;
+            stateTimer = 0.f;
 
             if (textureLoaded) {
                 sprite.setColor(sf::Color::White);
@@ -126,34 +195,7 @@ void EnemyBoss::update(float deltaTime, Player& player, circle& aspiradora, sf::
         }
     }
 
-    if (shootTimer >= shootCooldown &&
-        tileMap.hasLineOfSight(hitbox.getPosition(), player.getCenter())) {
-        burstShotsLeft = 3;
-        burstShotTimer = burstShotDelay;
-        lastShotDirection = player.getCenter() - hitbox.getPosition();
-        shootTimer = 0.f;
-    }
-
-    if (burstShotsLeft > 0) {
-        burstShotTimer += deltaTime;
-
-        if (burstShotTimer >= burstShotDelay) {
-            float angles[3] = { -14.f, 0.f, 14.f };
-            int shotIndex = 3 - burstShotsLeft;
-
-            projectiles.push_back(
-                Projectile(
-                    hitbox.getPosition(),
-                    rotateVector(lastShotDirection, angles[shotIndex])
-                )
-            );
-
-            burstShotsLeft--;
-            burstShotTimer = 0.f;
-        }
-    }
-
-    if (throwTimer >= throwCooldown) {
+    if (throwTimer >= throwCooldown && state == BossMoving) {
         sf::Vector2i furnitureTile;
 
         if (tileMap.findNearestFurniture(hitbox.getPosition(), furnitureTile)) {
@@ -195,11 +237,7 @@ void EnemyBoss::updateProjectiles(float deltaTime, Player& player, circle& aspir
         std::remove_if(
             projectiles.begin(),
             projectiles.end(),
-            [&window, &player, &aspiradora, &tileMap](Projectile& projectile) {
-                if (tileMap.checkCollision(projectile.shape.getGlobalBounds())) {
-                    return true;
-                }
-
+            [&window, &player, &aspiradora](Projectile& projectile) {
                 if (projectile.shape.getGlobalBounds().intersects(aspiradora.getBounds())) {
                     return true;
                 }
