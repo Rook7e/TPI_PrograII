@@ -10,6 +10,14 @@
 #include "circle.h"
 #include "TileMap.h"
 
+enum BossState {
+    BossMoving,
+    BossSideDashing,
+    BossChargingShot,
+    BossBurstShooting,
+    BossRecovering
+};
+
 class EnemyBoss : public EnemyBase {
 private:
     sf::Sprite sprite;
@@ -37,6 +45,16 @@ private:
     float burstShotDelay;
     sf::Vector2f lastShotDirection;
 
+    BossState state;
+
+    float stateTimer;
+    float chargeDuration;
+    float recoverDuration;
+
+    int fanShotCount;
+    int fanShotIndex;
+    float fanAngle;
+
     float throwTimer;
     float throwCooldown;
 
@@ -44,6 +62,8 @@ private:
     void updateProjectiles(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
     void updateFurnitureProjectiles(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
     sf::Vector2f rotateVector(sf::Vector2f vector, float degrees);
+
+
 
 protected:
     void syncSpritePosition();
