@@ -47,6 +47,7 @@ private:
     std::vector<EnemyChaser> chasers;
     std::vector<EnemyShooter> shooters;
     std::vector<EnemyThrower> throwers;
+    std::vector<EnemyBoss> bosses;
     std::vector<mess> messes;
     std::vector<Medkit> medkits;
 
@@ -100,6 +101,17 @@ private:
     void enterRoom(int x, int y);
     void checkRoomCleared();
     void checkRoomTransition();
+
+    bool isBossRoom(int x, int y);
+    bool areNormalRoomsCleared();
+    void spawnBoss();
+    sf::RectangleShape trapdoor;
+    bool trapdoorActive;
+    int currentFloor;
+
+    void setupTrapdoor();
+    void updateTrapdoor();
+    void goToNextFloor();
 
 public:
     Game();
