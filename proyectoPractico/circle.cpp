@@ -86,3 +86,8 @@ sf::FloatRect circle::getBounds() {
 sf::Vector2f circle::getPosition() {
     return shape.getPosition();
 }
+
+void circle::setMaxDistance(float distance) {
+    maxDistance = distance;
+    manguera.setTotalLength(maxDistance);
+}

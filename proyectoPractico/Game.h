@@ -13,6 +13,8 @@
 #include "mess.h"
 #include "AudioManager.h"
 #include "MainMenu.h"
+#include "Progression.h"
+#include "UpgradeMenu.h"
 #include <string>
 
 struct RoomInfo {
@@ -29,9 +31,10 @@ struct RoomInfo {
 };
 
 enum GameState {
+    MainMenuState,
     Playing,
-    GameOver,
-    MainMenuState
+    UpgradeMenuState,
+    GameOver
 };
 
 class Game {
@@ -82,7 +85,7 @@ private:
     void spawnInitialMess();
 
     void updatePlayer(float deltaTime);
-    void updateMessCleaning();
+    void updateMessCleaning(float deltaTime);
     void updateEnemies(float deltaTime);
     void applyVacuumDamage();
     void removeDeadEnemies();
@@ -112,6 +115,14 @@ private:
     void setupTrapdoor();
     void updateTrapdoor();
     void goToNextFloor();
+
+    Progression progression;
+    UpgradeMenu upgradeMenu;
+
+    sf::Vector2f lastSafePlayerPosition;
+    void setPlayerSafePosition(sf::Vector2f position);
+
+    void drawTrashBar();
 
 public:
     Game();

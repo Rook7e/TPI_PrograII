@@ -59,6 +59,8 @@
 		<Unit filename="AudioManager.h" />
 		<Unit filename="EnemyBase.cpp" />
 		<Unit filename="EnemyBase.h" />
+		<Unit filename="EnemyBoss.cpp" />
+		<Unit filename="EnemyBoss.h" />
 		<Unit filename="EnemyChaser.cpp" />
 		<Unit filename="EnemyChaser.h" />
 		<Unit filename="EnemyShooter.cpp" />
@@ -75,10 +77,14 @@
 		<Unit filename="MangueraAspiradora.h" />
 		<Unit filename="Medkit.cpp" />
 		<Unit filename="Medkit.h" />
+		<Unit filename="Progression,h.h" />
+		<Unit filename="Progression.cpp" />
 		<Unit filename="Projectile.cpp" />
 		<Unit filename="Projectile.h" />
 		<Unit filename="TileMap.cpp" />
 		<Unit filename="TileMap.h" />
+		<Unit filename="UpgradeMenu.cpp" />
+		<Unit filename="UpgradeMenu.h" />
 		<Unit filename="VectorMath.h" />
 		<Unit filename="circle.cpp" />
 		<Unit filename="circle.h" />

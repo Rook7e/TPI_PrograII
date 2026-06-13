@@ -38,8 +38,8 @@ EnemyBoss::EnemyBoss(sf::Vector2f position)
 
     dashTimer = 0.f;
     dashCooldown = 2.4f;
-    dashDuration = 0.28f;
-    dashSpeed = 380.f;
+    dashDuration = 0.50f;
+    dashSpeed = 500.f;
     dashing = false;
     dashDirection = sf::Vector2f(0.f, 0.f);
 
