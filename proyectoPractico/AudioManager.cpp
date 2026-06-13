@@ -37,7 +37,7 @@ bool AudioManager::load() {
     music.setLoop(true);
     music.setVolume(5.f);
 
-    hitSound.setVolume(60.f);
+    hitSound.setVolume(3.f);
     cleanSound.setVolume(45.f);
     medkitSound.setVolume(70.f);
     mapChangeSound.setVolume(80.f);

@@ -26,10 +26,21 @@ Game::Game()
     setupTrapdoor();
 
     currentRoomX = 1;
-    currentRoomY = 1;
+    currentRoomY = 0;
 
     setupRooms();
     enterRoom(currentRoomX, currentRoomY);
+    setPlayerSafePosition(sf::Vector2f(576.f, 432.f));
+
+    currentFloor = 1;
+    trapdoorActive = false;
+    setupTrapdoor();
+    aspiradora.setMaxDistance(progression.getVacuumRange());
+}
+
+void Game::setPlayerSafePosition(sf::Vector2f position) {
+    player.setPosition(position);
+    lastSafePlayerPosition = position;
 }
 
 void Game::setupTrapdoor() {
@@ -47,12 +58,15 @@ void Game::updateTrapdoor() {
     }
 
     if (trapdoor.getGlobalBounds().intersects(player.getBounds())) {
-        goToNextFloor();
+        trapdoorActive = false;
+        progression.emptyTrash();
+        gameState = UpgradeMenuState;
     }
 }
 
 void Game::goToNextFloor() {
     currentFloor++;
+    progression.setCurrentFloor(currentFloor);
 
     trapdoorActive = false;
 
@@ -68,7 +82,7 @@ void Game::goToNextFloor() {
     currentRoomX = 1;
     currentRoomY = 1;
 
-    player.setPosition(sf::Vector2f(576.f, 432.f));
+    setPlayerSafePosition(sf::Vector2f(576.f, 432.f));
 
     enterRoom(currentRoomX, currentRoomY);
 
@@ -198,7 +212,7 @@ void Game::enterRoom(int x, int y) {
 void Game::checkRoomCleared() {
     RoomInfo& room = rooms[currentRoomY][currentRoomX];
 
-    if (!room.cleared &&
+        if (!room.cleared &&
         chasers.empty() &&
         shooters.empty() &&
         throwers.empty() &&
@@ -222,7 +236,7 @@ void Game::checkRoomTransition() {
     if (pos.x < 0.f) {
         if (room.cleared && room.doorLeft && currentRoomX > 0) {
             enterRoom(currentRoomX - 1, currentRoomY);
-            player.setPosition(sf::Vector2f(1100.f, pos.y));
+            setPlayerSafePosition(sf::Vector2f(1100.f, pos.y));
         } else {
             player.setPosition(sf::Vector2f(20.f, pos.y));
         }
@@ -231,7 +245,7 @@ void Game::checkRoomTransition() {
     if (pos.x > 1152.f) {
         if (room.cleared && room.doorRight && currentRoomX < 2) {
             enterRoom(currentRoomX + 1, currentRoomY);
-            player.setPosition(sf::Vector2f(50.f, pos.y));
+            setPlayerSafePosition(sf::Vector2f(50.f, pos.y));
         } else {
             player.setPosition(sf::Vector2f(1130.f, pos.y));
         }
@@ -248,7 +262,7 @@ void Game::checkRoomTransition() {
             currentRoomY > 0 &&
             canEnterBossRoom) {
             enterRoom(nextX, nextY);
-            player.setPosition(sf::Vector2f(pos.x, 810.f));
+            setPlayerSafePosition(sf::Vector2f(pos.x, 810.f));
         } else {
             player.setPosition(sf::Vector2f(pos.x, 20.f));
         }
@@ -257,7 +271,7 @@ void Game::checkRoomTransition() {
     if (pos.y > 864.f) {
         if (room.cleared && room.doorDown && currentRoomY < 2) {
             enterRoom(currentRoomX, currentRoomY + 1);
-            player.setPosition(sf::Vector2f(pos.x, 50.f));
+            setPlayerSafePosition(sf::Vector2f(pos.x, 50.f));
         } else {
             player.setPosition(sf::Vector2f(pos.x, 840.f));
         }
@@ -280,10 +294,30 @@ void Game::processEvents() {
         } else if (action == MenuQuit) {
             window.close();
         }
-    }
+
 
     }
+
+    if (gameState == UpgradeMenuState) {
+    UpgradeAction action = upgradeMenu.handleEvent(event, window);
+
+            if (action == UpgradeBuyDamage) {
+            progression.buyVacuumDamage();
+        } else if (action == UpgradeBuyRange) {
+            if (progression.buyVacuumRange()) {
+                aspiradora.setMaxDistance(progression.getVacuumRange());
+            }
+        } else if (action == UpgradeBuyCapacity) {
+            progression.buyVacuumCapacity();
+        } else if (action == UpgradeContinue) {
+            goToNextFloor();
+            gameState = Playing;
+        }
+    }
 }
+
+    }
+
 
 void Game::update(float deltaTime) {
     switch (gameState) {
@@ -298,6 +332,9 @@ void Game::update(float deltaTime) {
     case GameOver:
         updateGameOver();
         break;
+
+    case UpgradeMenuState:
+        break;
     }
 }
 
@@ -305,7 +342,7 @@ void Game::updatePlaying(float deltaTime) {
     updatePlayer(deltaTime);
     aspiradora.update(window, player.getCenter());
 
-    updateMessCleaning();
+    updateMessCleaning(deltaTime);
     updateEnemies(deltaTime);
     applyVacuumDamage();
     removeDeadEnemies();
@@ -316,9 +353,23 @@ void Game::updatePlaying(float deltaTime) {
     updateMedkits();
 
     if (player.isDead()) {
+    progression.addDeath();
+
+    if (progression.isRunOver()) {
         gameState = GameOver;
-        window.setTitle("Estas muerto - Presiona R para reiniciar");
+        window.setTitle("Perdiste 3 veces - Presiona R para reiniciar");
+    } else {
+        player.reset();
+        player.setPosition(lastSafePlayerPosition);
+
+        window.setTitle(
+            "Moriste - Intentos: " +
+            std::to_string(progression.getDeaths()) +
+            "/" +
+            std::to_string(progression.getMaxDeaths())
+        );
     }
+}
 }
 
 void Game::updateGameOver() {
@@ -327,7 +378,41 @@ void Game::updateGameOver() {
     }
 }
 
+void Game::drawTrashBar() {
+    float stored = progression.getTrashStored();
+    float capacity = progression.getTrashCapacity();
+
+    float percent = 0.f;
+
+    if (capacity > 0.f) {
+        percent = stored / capacity;
+    }
+
+    if (percent > 1.f) {
+        percent = 1.f;
+    }
+
+    sf::RectangleShape back(sf::Vector2f(140.f, 12.f));
+    back.setPosition(20.f, 70.f);
+    back.setFillColor(sf::Color(45, 38, 34));
+    back.setOutlineThickness(2.f);
+    back.setOutlineColor(sf::Color(120, 100, 80));
+
+    sf::RectangleShape bar(sf::Vector2f(140.f * percent, 12.f));
+    bar.setPosition(20.f, 70.f);
+    bar.setFillColor(sf::Color(120, 85, 45));
+
+    window.draw(back);
+    window.draw(bar);
+}
+
 void Game::draw() {
+
+    if (gameState == UpgradeMenuState) {
+    upgradeMenu.draw(window, progression);
+    window.display();
+    return;
+}
 
     if (gameState == MainMenuState) {
     mainMenu.draw(window);
@@ -349,6 +434,10 @@ void Game::draw() {
     for (int i = 0; i < medkits.size(); i++) {
         medkits[i].draw(window);
     }
+
+    player.drawStamina(window);
+    player.drawLife(window);
+    drawTrashBar();
 
     player.draw(window);
     aspiradora.draw(window);
@@ -401,16 +490,22 @@ void Game::resetGame() {
     bosses.clear();
 
     setupRooms();
-
     currentRoomX = 1;
+
     currentRoomY = 1;
     enterRoom(currentRoomX, currentRoomY);
+    setPlayerSafePosition(sf::Vector2f(576.f, 432.f));
 
     spawnChaserClock.restart();
     spawnShooterClock.restart();
     spawnThrowerClock.restart();
     vacuumDamageClock.restart();
     medkitSpawnClock.restart();
+
+    progression.reset();
+    currentFloor = 1;
+    trapdoorActive = false;
+    aspiradora.setMaxDistance(progression.getVacuumRange());
 
     window.setTitle("Proyecto Practico");
 }
@@ -485,26 +580,51 @@ void Game::updatePlayer(float deltaTime) {
 
     if (tileMap.checkCollision(player.getBounds())) {
         player.setPosition(oldPlayerPosition);
+    } else {
+        lastSafePlayerPosition = player.getPosition();
     }
 
     player.update(deltaTime);
 }
 
-void Game::updateMessCleaning() {
+void Game::updateMessCleaning(float deltaTime) {
     int messCountBefore = messes.size();
+
+    for (int i = 0; i < messes.size(); i++) {
+        if (messes[i].getBounds().intersects(aspiradora.getBounds())) {
+            messes[i].updateCleaning(deltaTime);
+        }
+    }
 
     messes.erase(
         std::remove_if(
             messes.begin(),
             messes.end(),
             [this](mess& dirt) {
-                return dirt.getBounds().intersects(aspiradora.getBounds());
+                if (!dirt.isCleaned()) {
+                    return false;
+                }
+
+                float density = dirt.getDensity();
+
+                if (progression.canStoreTrash(density)) {
+                    progression.addTrash(density);
+                }
+
+                progression.addTrashReward(
+                    dirt.getScoreValue(),
+                    dirt.getGoldValue()
+                );
+
+                return true;
             }
         ),
         messes.end()
     );
 
-    if (messes.size() < messCountBefore) {
+    int cleaned = messCountBefore - messes.size();
+
+    if (cleaned > 0) {
         audio.playClean();
     }
 }
@@ -536,7 +656,7 @@ void Game::applyVacuumDamage() {
     for (int i = 0; i < chasers.size(); i++) {
         if (!chasers[i].isDead() &&
             aspiradora.getBounds().intersects(chasers[i].getBounds())) {
-            chasers[i].takeDamage(1, aspiradora.getPosition());
+            chasers[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition());
             hitSomething = true;
         }
     }
@@ -544,7 +664,7 @@ void Game::applyVacuumDamage() {
     for (int i = 0; i < shooters.size(); i++) {
         if (!shooters[i].isDead() &&
             aspiradora.getBounds().intersects(shooters[i].getBounds())) {
-            shooters[i].takeDamage(1, aspiradora.getPosition());
+            shooters[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition());
             hitSomething = true;
         }
     }
@@ -552,7 +672,7 @@ void Game::applyVacuumDamage() {
     for (int i = 0; i < throwers.size(); i++) {
         if (!throwers[i].isDead() &&
             aspiradora.getBounds().intersects(throwers[i].getBounds())) {
-            throwers[i].takeDamage(1, aspiradora.getPosition());
+            throwers[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition());
             hitSomething = true;
         }
     }
@@ -561,7 +681,7 @@ void Game::applyVacuumDamage() {
     for (int i = 0; i < bosses.size(); i++) {
         if (!bosses[i].isDead() &&
             aspiradora.getBounds().intersects(bosses[i].getBounds())) {
-            bosses[i].takeDamage(1, aspiradora.getPosition());
+            bosses[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition());
             hitSomething = true;
         }
     }
@@ -579,6 +699,7 @@ void Game::removeDeadEnemies() {
             messes.push_back(mess(chasers[i].getPosition(), 2));
             chasers.erase(chasers.begin() + i);
             enemiesKilled++;
+            progression.addEnemyReward(50, 3);
             i--;
         }
     }
@@ -588,6 +709,7 @@ void Game::removeDeadEnemies() {
             messes.push_back(mess(shooters[i].getPosition(), 2));
             shooters.erase(shooters.begin() + i);
             enemiesKilled++;
+            progression.addEnemyReward(75, 4);
             i--;
         }
     }
@@ -597,6 +719,7 @@ void Game::removeDeadEnemies() {
             messes.push_back(mess(throwers[i].getPosition(), 2));
             throwers.erase(throwers.begin() + i);
             enemiesKilled++;
+            progression.addEnemyReward(100, 5);
             i--;
         }
     }
@@ -605,6 +728,7 @@ void Game::removeDeadEnemies() {
         if (bosses[i].isDead()) {
             messes.push_back(mess(bosses[i].getPosition(), 2));
             bosses.erase(bosses.begin() + i);
+            progression.addBossReward(500, 20);
             i--;
     }
 }
@@ -679,3 +803,5 @@ void Game::checkMapChange() {
         changeToMap2();
     }
 }
+
+

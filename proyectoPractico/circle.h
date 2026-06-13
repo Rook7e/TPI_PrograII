@@ -22,8 +22,10 @@ public:
 
     void update(sf::RenderWindow& window, sf::Vector2f playerCenter);
     void draw(sf::RenderWindow& window);
+    void setMaxDistance(float distance);
     sf::FloatRect getBounds();
     sf::Vector2f getPosition();
+
 };
 
 #endif // CIRCLE_H_INCLUDED
