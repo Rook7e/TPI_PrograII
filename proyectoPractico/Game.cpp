@@ -36,6 +36,130 @@ Game::Game()
     trapdoorActive = false;
     setupTrapdoor();
     aspiradora.setMaxDistance(progression.getVacuumRange());
+    activeSaveSlot = 0;
+}
+
+
+SaveData Game::createSaveData() {
+    SaveData data = {};
+
+    data.score = progression.getScore();
+    data.gold = progression.getGold();
+    data.deaths = progression.getDeaths();
+    data.currentFloor = currentFloor;
+    data.vacuumDamageLevel = progression.getVacuumDamageLevel();
+    data.vacuumRangeLevel = progression.getVacuumRangeLevel();
+    data.vacuumCapacityLevel = progression.getVacuumCapacityLevel();
+    data.trashStored = progression.getTrashStored();
+
+    data.currentRoomX = currentRoomX;
+    data.currentRoomY = currentRoomY;
+    data.playerX = player.getPosition().x;
+    data.playerY = player.getPosition().y;
+
+    for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 3; x++) {
+            data.roomsCleared[y * 3 + x] = rooms[y][x].cleared;
+        }
+    }
+
+    data.chaserCount = (int)chasers.size();
+    data.shooterCount = (int)shooters.size();
+    data.throwerCount = (int)throwers.size();
+    data.bossCount = (int)bosses.size();
+
+    return data;
+}
+
+bool Game::saveGame(int slot) {
+    return saveSystem.save(slot, createSaveData());
+}
+
+bool Game::loadGame(int slot) {
+    SaveData data = {};
+    if (!saveSystem.load(slot, data)) {
+        return false;
+    }
+
+    progression.loadState(
+        data.score,
+        data.gold,
+        data.deaths,
+        data.currentFloor,
+        data.vacuumDamageLevel,
+        data.vacuumRangeLevel,
+        data.vacuumCapacityLevel,
+        data.trashStored
+    );
+
+    currentFloor = data.currentFloor;
+    setupRooms();
+
+    for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 3; x++) {
+            rooms[y][x].cleared = data.roomsCleared[y * 3 + x];
+        }
+    }
+
+    int roomX = data.currentRoomX;
+    int roomY = data.currentRoomY;
+
+    if (roomX < 0 || roomX > 2) roomX = 1;
+    if (roomY < 0 || roomY > 2) roomY = 1;
+
+    enterRoom(roomX, roomY);
+    chasers.clear();
+    shooters.clear();
+    throwers.clear();
+    bosses.clear();
+
+    for (int i = 0; i < data.chaserCount; i++) {
+        chasers.push_back(
+            EnemyChaser(sf::Vector2f(650.f + i * 35.f, 250.f))
+        );
+    }
+
+    for (int i = 0; i < data.shooterCount; i++) {
+        shooters.push_back(
+            EnemyShooter(sf::Vector2f(700.f + i * 35.f, 500.f))
+        );
+    }
+
+    for (int i = 0; i < data.throwerCount; i++) {
+        throwers.push_back(
+            EnemyThrower(sf::Vector2f(250.f + i * 35.f, 500.f))
+        );
+    }
+
+    for (int i = 0; i < data.bossCount; i++) {
+        bosses.push_back(
+            EnemyBoss(sf::Vector2f(576.f, 360.f))
+        );
+}
+    setPlayerSafePosition(sf::Vector2f(data.playerX, data.playerY));
+    aspiradora.setMaxDistance(progression.getVacuumRange());
+
+    trapdoorActive = false;
+    gameState = Playing;
+    frameClock.restart();
+    return true;
+}
+
+    void Game::openSaveSlot(int slot) {
+    activeSaveSlot = slot;
+    pauseMenu.setSelectedSlot(slot);
+
+    if (saveSystem.exists(slot)) {
+        loadGame(slot);
+    } else {
+        startNewGame();
+        saveGame(slot);
+    }
+}
+
+void Game::startNewGame() {
+    resetGame();
+    gameState = Playing;
 }
 
 void Game::setPlayerSafePosition(sf::Vector2f position) {
@@ -280,43 +404,97 @@ void Game::checkRoomTransition() {
 void Game::processEvents() {
     sf::Event event;
 
-        while (window.pollEvent(event)) {
+    while (window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
+            window.close();
+            continue;
+        }
 
-            if (event.type == sf::Event::Closed) {
+        // Menu principal
+        if (gameState == MainMenuState) {
+            MenuAction action = mainMenu.handleEvent(event, window);
+
+            if (action == MenuLoadSlot1) {
+                openSaveSlot(1);
+            } else if (action == MenuLoadSlot2) {
+                openSaveSlot(2);
+            } else if (action == MenuLoadSlot3) {
+                openSaveSlot(3);
+            } else if (action == MenuDeleteSlot1) {
+                saveSystem.removeSave(1);
+            } else if (action == MenuDeleteSlot2) {
+                saveSystem.removeSave(2);
+            } else if (action == MenuDeleteSlot3) {
+                saveSystem.removeSave(3);
+            } else if (action == MenuQuit) {
                 window.close();
             }
 
-        if (gameState == MainMenuState) {
-        MenuAction action = mainMenu.handleEvent(event, window);
-
-        if (action == MenuStart) {
-            gameState = Playing;
-        } else if (action == MenuQuit) {
-            window.close();
+            continue;
         }
 
-
-    }
-
-    if (gameState == UpgradeMenuState) {
-    UpgradeAction action = upgradeMenu.handleEvent(event, window);
+        // Menu de mejoras
+        if (gameState == UpgradeMenuState) {
+            UpgradeAction action =
+                upgradeMenu.handleEvent(event, window);
 
             if (action == UpgradeBuyDamage) {
-            progression.buyVacuumDamage();
-        } else if (action == UpgradeBuyRange) {
-            if (progression.buyVacuumRange()) {
-                aspiradora.setMaxDistance(progression.getVacuumRange());
+                progression.buyVacuumDamage();
+            } else if (action == UpgradeBuyRange) {
+                if (progression.buyVacuumRange()) {
+                    aspiradora.setMaxDistance(
+                        progression.getVacuumRange()
+                    );
+                }
+            } else if (action == UpgradeBuyCapacity) {
+                progression.buyVacuumCapacity();
+            } else if (action == UpgradeContinue) {
+                goToNextFloor();
+                gameState = Playing;
             }
-        } else if (action == UpgradeBuyCapacity) {
-            progression.buyVacuumCapacity();
-        } else if (action == UpgradeContinue) {
-            goToNextFloor();
-            gameState = Playing;
+
+            continue;
+        }
+
+        // Abrir pausa
+        if (gameState == Playing &&
+            event.type == sf::Event::KeyPressed &&
+            event.key.code == sf::Keyboard::Escape) {
+            stateBeforePause = gameState;
+            gameState = PausedState;
+            continue;
+        }
+
+        // Menu de pausa
+        if (gameState == PausedState) {
+            PauseAction action = pauseMenu.handleEvent(event);
+
+            if (action == PauseResume) {
+                gameState = stateBeforePause;
+                frameClock.restart();
+
+            } else if (action == PauseSave) {
+                activeSaveSlot = pauseMenu.getSelectedSlot();
+                saveGame(activeSaveSlot);
+
+            } else if (action == PauseLoad) {
+                int slot = pauseMenu.getSelectedSlot();
+
+                if (loadGame(slot)) {
+                    activeSaveSlot = slot;
+                }
+
+            } else if (action == PauseMainMenu) {
+                gameState = MainMenuState;
+
+            } else if (action == PauseQuit) {
+                window.close();
+            }
+
+            continue;
         }
     }
 }
-
-    }
 
 
 void Game::update(float deltaTime) {
@@ -334,6 +512,9 @@ void Game::update(float deltaTime) {
         break;
 
     case UpgradeMenuState:
+        break;
+
+    case PausedState:
         break;
     }
 }
@@ -415,7 +596,7 @@ void Game::draw() {
 }
 
     if (gameState == MainMenuState) {
-    mainMenu.draw(window);
+    mainMenu.draw(window, saveSystem);
     window.display();
     return;
 }
@@ -461,6 +642,10 @@ void Game::draw() {
     player.drawStamina(window);
     player.drawLife(window);
 
+    if (gameState == PausedState) {
+    pauseMenu.draw(window, saveSystem);
+}
+
     window.display();
 }
 
@@ -491,7 +676,6 @@ void Game::resetGame() {
 
     setupRooms();
     currentRoomX = 1;
-
     currentRoomY = 1;
     enterRoom(currentRoomX, currentRoomY);
     setPlayerSafePosition(sf::Vector2f(576.f, 432.f));

@@ -77,8 +77,8 @@
 		<Unit filename="MangueraAspiradora.h" />
 		<Unit filename="Medkit.cpp" />
 		<Unit filename="Medkit.h" />
-		<Unit filename="Progression,h.h" />
 		<Unit filename="Progression.cpp" />
+		<Unit filename="Progression.h" />
 		<Unit filename="Projectile.cpp" />
 		<Unit filename="Projectile.h" />
 		<Unit filename="TileMap.cpp" />
