@@ -13,6 +13,10 @@
 #include "mess.h"
 #include "AudioManager.h"
 #include "MainMenu.h"
+#include "Progression.h"
+#include "UpgradeMenu.h"
+#include "SaveSystem.h"
+#include "PauseMenu.h"
 #include <string>
 
 struct RoomInfo {
@@ -29,9 +33,11 @@ struct RoomInfo {
 };
 
 enum GameState {
+    MainMenuState,
     Playing,
-    GameOver,
-    MainMenuState
+    PausedState,
+    UpgradeMenuState,
+    GameOver
 };
 
 class Game {
@@ -47,6 +53,7 @@ private:
     std::vector<EnemyChaser> chasers;
     std::vector<EnemyShooter> shooters;
     std::vector<EnemyThrower> throwers;
+    std::vector<EnemyBoss> bosses;
     std::vector<mess> messes;
     std::vector<Medkit> medkits;
 
@@ -81,7 +88,7 @@ private:
     void spawnInitialMess();
 
     void updatePlayer(float deltaTime);
-    void updateMessCleaning();
+    void updateMessCleaning(float deltaTime);
     void updateEnemies(float deltaTime);
     void applyVacuumDamage();
     void removeDeadEnemies();
@@ -100,6 +107,37 @@ private:
     void enterRoom(int x, int y);
     void checkRoomCleared();
     void checkRoomTransition();
+
+    bool isBossRoom(int x, int y);
+    bool areNormalRoomsCleared();
+    void spawnBoss();
+    sf::RectangleShape trapdoor;
+    bool trapdoorActive;
+    int currentFloor;
+
+    void setupTrapdoor();
+    void updateTrapdoor();
+    void goToNextFloor();
+
+    Progression progression;
+    UpgradeMenu upgradeMenu;
+
+    sf::Vector2f lastSafePlayerPosition;
+    void setPlayerSafePosition(sf::Vector2f position);
+
+    void drawTrashBar();
+
+    SaveSystem saveSystem;
+    PauseMenu pauseMenu;
+    GameState stateBeforePause;
+
+    SaveData createSaveData();
+    bool saveGame(int slot);
+    bool loadGame(int slot);
+    void startNewGame();
+    int activeSaveSlot;
+
+    void openSaveSlot(int slot);
 
 public:
     Game();

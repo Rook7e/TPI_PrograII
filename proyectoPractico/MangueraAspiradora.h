@@ -25,6 +25,7 @@ public:
 
     void update(sf::Vector2f start, sf::Vector2f end);
     void draw(sf::RenderWindow& window);
+    void setTotalLength(float totalLength);
 };
 
 #endif

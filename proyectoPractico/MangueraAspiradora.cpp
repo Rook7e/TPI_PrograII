@@ -9,6 +9,11 @@ MangueraAspiradora::MangueraAspiradora() {
     initialized = false;
 }
 
+void MangueraAspiradora::setTotalLength(float totalLength) {
+    segmentLength = totalLength / (pointCount - 1);
+    initialized = false;
+}
+
 float MangueraAspiradora::getLength(sf::Vector2f vector) {
     return std::sqrt(vector.x * vector.x + vector.y * vector.y);
 }

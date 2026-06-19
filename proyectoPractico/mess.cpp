@@ -45,6 +45,25 @@ mess::mess(sf::Vector2f position, int type) {
         spriteType = type;
     }
 
+        if (spriteType == 0) {
+            density = 1.f;
+            scoreValue = 10;
+            goldValue = 1;
+            cleanTime = 0.25f;
+        } else if (spriteType == 1) {
+            density = 2.f;
+            scoreValue = 18;
+            goldValue = 2;
+            cleanTime = 0.7f;
+        } else {
+            density = 3.f;
+            scoreValue = 30;
+            goldValue = 4;
+            cleanTime = 1.2f;
+        }
+
+cleanProgress = 0.f;
+
     sf::Texture* selectedTexture = NULL;
 
     if (spriteType == 0 && texture1Loaded) {
@@ -77,8 +96,53 @@ void mess::draw(sf::RenderWindow& window) {
     } else {
         window.draw(shape);
     }
+
+    if (cleanProgress > 0.f && cleanProgress < cleanTime) {
+        sf::RectangleShape back(sf::Vector2f(28.f, 4.f));
+        back.setFillColor(sf::Color(35, 25, 20));
+        back.setPosition(shape.getPosition().x - 14.f, shape.getPosition().y - 22.f);
+
+        sf::RectangleShape bar(sf::Vector2f(28.f * getCleanPercent(), 4.f));
+        bar.setFillColor(sf::Color(180, 140, 80));
+        bar.setPosition(back.getPosition());
+
+        window.draw(back);
+        window.draw(bar);
+    }
 }
 
 sf::FloatRect mess::getBounds() {
     return shape.getGlobalBounds();
+}
+
+float mess::getDensity() {
+    return density;
+}
+
+int mess::getScoreValue() {
+    return scoreValue;
+}
+
+int mess::getGoldValue() {
+    return goldValue;
+}
+
+void mess::updateCleaning(float deltaTime) {
+    cleanProgress += deltaTime;
+
+    if (cleanProgress > cleanTime) {
+        cleanProgress = cleanTime;
+    }
+}
+
+bool mess::isCleaned() {
+    return cleanProgress >= cleanTime;
+}
+
+float mess::getCleanPercent() {
+    if (cleanTime <= 0.f) {
+        return 1.f;
+    }
+
+    return cleanProgress / cleanTime;
 }
