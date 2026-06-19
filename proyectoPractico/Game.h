@@ -15,6 +15,8 @@
 #include "MainMenu.h"
 #include "Progression.h"
 #include "UpgradeMenu.h"
+#include "SaveSystem.h"
+#include "PauseMenu.h"
 #include <string>
 
 struct RoomInfo {
@@ -33,6 +35,7 @@ struct RoomInfo {
 enum GameState {
     MainMenuState,
     Playing,
+    PausedState,
     UpgradeMenuState,
     GameOver
 };
@@ -123,6 +126,18 @@ private:
     void setPlayerSafePosition(sf::Vector2f position);
 
     void drawTrashBar();
+
+    SaveSystem saveSystem;
+    PauseMenu pauseMenu;
+    GameState stateBeforePause;
+
+    SaveData createSaveData();
+    bool saveGame(int slot);
+    bool loadGame(int slot);
+    void startNewGame();
+    int activeSaveSlot;
+
+    void openSaveSlot(int slot);
 
 public:
     Game();

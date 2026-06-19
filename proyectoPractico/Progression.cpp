@@ -185,3 +185,26 @@ bool Progression::buyVacuumCapacity() {
 int Progression::getVacuumCapacityLevel() {
     return vacuumCapacityLevel;
 }
+
+void Progression::loadState(
+    int newScore,
+    int newGold,
+    int newDeaths,
+    int newFloor,
+    int damageLevel,
+    int rangeLevel,
+    int capacityLevel,
+    float storedTrash)
+{
+    score = newScore;
+    gold = newGold;
+    deaths = newDeaths;
+    currentFloor = newFloor;
+    vacuumDamageLevel = damageLevel;
+    vacuumRangeLevel = rangeLevel;
+    vacuumCapacityLevel = capacityLevel;
+    trashStored = storedTrash;
+
+    if (trashStored < 0.f) trashStored = 0.f;
+    if (trashStored > getTrashCapacity()) trashStored = getTrashCapacity();
+}

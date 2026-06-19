@@ -63,6 +63,17 @@ public:
 
     void addRewards(int amount);
     int getRewards();
+
+    void loadState(
+    int newScore,
+    int newGold,
+    int newDeaths,
+    int newFloor,
+    int damageLevel,
+    int rangeLevel,
+    int capacityLevel,
+    float storedTrash
+    );
 };
 
 #endif
