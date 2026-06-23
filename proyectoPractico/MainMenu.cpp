@@ -205,9 +205,9 @@ void MainMenu::draw(
 ) {
     drawBackground(window);
 
-    titleText.setString("PROYECTO PRACTICO");
+    titleText.setString("Aprentice`s Mess");
     newGameText.setString("Elegi una ranura para comenzar");
-    quitText.setString("Salir [Escape]");
+    quitText.setString("Salir [Escapar]");
 
     for (int i = 0; i < 3; i++) {
         slotTexts[i].setString(saves.getSummary(i + 1));

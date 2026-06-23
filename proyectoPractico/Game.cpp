@@ -4,14 +4,12 @@
 #include <ctime>
 #include <string>
 
-Game::Game()
-    : window(sf::VideoMode(1152, 864), "Proyecto Practico")
+Game::Game(): window(sf::VideoMode(1152, 864), "Proyecto Practico")
 {
     window.setFramerateLimit(60);
-    audio.load();
-    audio.playMusic();
     std::srand((unsigned)std::time(NULL));
-
+    audio.load();
+    audio.playMenuMusic();
     if (!tileMap.load()) {
         window.close();
     }
@@ -185,6 +183,7 @@ void Game::updateTrapdoor() {
         trapdoorActive = false;
         progression.emptyTrash();
         gameState = UpgradeMenuState;
+        audio.playMenuMusic();
     }
 }
 
@@ -245,6 +244,7 @@ bool Game::areNormalRoomsCleared() {
 
 void Game::spawnBoss() {
     bosses.push_back(EnemyBoss(sf::Vector2f(576.f, 360.f)));
+    audio.playBossMusic();
 }
 
 void Game::run() {
@@ -416,10 +416,13 @@ void Game::processEvents() {
 
             if (action == MenuLoadSlot1) {
                 openSaveSlot(1);
+                audio.playLevelMusic();
             } else if (action == MenuLoadSlot2) {
                 openSaveSlot(2);
+                audio.playLevelMusic();
             } else if (action == MenuLoadSlot3) {
                 openSaveSlot(3);
+                audio.playLevelMusic();
             } else if (action == MenuDeleteSlot1) {
                 saveSystem.removeSave(1);
             } else if (action == MenuDeleteSlot2) {
@@ -451,6 +454,8 @@ void Game::processEvents() {
             } else if (action == UpgradeContinue) {
                 goToNextFloor();
                 gameState = Playing;
+                audio.playLevelMusic();
+
             }
 
             continue;
@@ -472,6 +477,7 @@ void Game::processEvents() {
             if (action == PauseResume) {
                 gameState = stateBeforePause;
                 frameClock.restart();
+                audio.playLevelMusic();
 
             } else if (action == PauseSave) {
                 activeSaveSlot = pauseMenu.getSelectedSlot();
@@ -482,6 +488,7 @@ void Game::processEvents() {
 
                 if (loadGame(slot)) {
                     activeSaveSlot = slot;
+                    audio.playLevelMusic();
                 }
 
             } else if (action == PauseMainMenu) {
@@ -720,6 +727,7 @@ void Game::changeToMap2() {
 
     window.setTitle("Piso 2");
     audio.playMapChange();
+    audio.playLevelMusic();
 }
 
 sf::Vector2f Game::randomSpawn() {

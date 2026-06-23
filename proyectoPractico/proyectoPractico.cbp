@@ -77,10 +77,12 @@
 		<Unit filename="MangueraAspiradora.h" />
 		<Unit filename="Medkit.cpp" />
 		<Unit filename="Medkit.h" />
+		<Unit filename="PauseMenu.cpp" />
 		<Unit filename="Progression.cpp" />
 		<Unit filename="Progression.h" />
 		<Unit filename="Projectile.cpp" />
 		<Unit filename="Projectile.h" />
+		<Unit filename="SaveSystem.cpp" />
 		<Unit filename="TileMap.cpp" />
 		<Unit filename="TileMap.h" />
 		<Unit filename="UpgradeMenu.cpp" />
