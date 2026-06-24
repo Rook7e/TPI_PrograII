@@ -305,3 +305,10 @@ void EnemyBoss::draw(sf::RenderWindow& window) {
         furnitureProjectiles[i].draw(window);
     }
 }
+    float EnemyBoss::getLifePercent() {
+    if (maxVida <= 0) {
+        return 0.f;
+    }
+
+    return (float)vida / maxVida;
+}

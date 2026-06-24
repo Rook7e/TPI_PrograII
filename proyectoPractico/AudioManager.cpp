@@ -4,7 +4,7 @@
 bool AudioManager::load() {
     bool ok = true;
 
-    // Solo cargamos los buffers de los efectos de sonido de corta duración (SFX)
+    // Solo cargamos los buffers de los efectos de sonido de corta duraciï¿½n (SFX)
     if (!hitBuffer.loadFromFile("assets/Sonidos/hit.wav")) {
         std::cout << "Error al cargar assets/hit.wav" << std::endl;
         ok = false;
@@ -40,7 +40,7 @@ bool AudioManager::load() {
     return ok;
 }
 
-// --- Métodos de reproducción de música ---
+// --- Mï¿½todos de reproducciï¿½n de mï¿½sica ---
 
 void AudioManager::playMenuMusic() {
     music.stop();
@@ -73,7 +73,7 @@ void AudioManager::stopMusic() {
     music.stop();
 }
 
-// --- Métodos de reproducción de efectos (SFX) ---
+// --- Mï¿½todos de reproducciï¿½n de efectos (SFX) ---
 
 void AudioManager::playHit() {
     hitSound.play();
