@@ -4,9 +4,11 @@
 #pragma once
 #include <SFML/Audio.hpp>
 
+
 class AudioManager {
 private:
     sf::Music music;
+    sf::Music bossMusic;
 
     sf::SoundBuffer hitBuffer;
     sf::SoundBuffer cleanBuffer;
@@ -23,6 +25,9 @@ public:
 
     void playMusic();
     void stopMusic();
+
+    bool playBossMusic();
+    void stopBossMusic();
 
     void playHit();
     void playClean();
