@@ -26,7 +26,7 @@ Game::Game()
     setupTrapdoor();
 
     currentRoomX = 1;
-    currentRoomY = 0;
+    currentRoomY = 1;
 
     setupRooms();
     enterRoom(currentRoomX, currentRoomY);
@@ -37,6 +37,15 @@ Game::Game()
     setupTrapdoor();
     aspiradora.setMaxDistance(progression.getVacuumRange());
     activeSaveSlot = 0;
+
+    bossFontLoaded = bossFont.loadFromFile("assets/Fonts/arial.ttf");
+
+    if (bossFontLoaded) {
+        bossNameText.setFont(bossFont);
+        bossNameText.setString("EL JEFE");
+        bossNameText.setCharacterSize(28);
+        bossNameText.setFillColor(sf::Color(230, 220, 210));
+    }
 }
 
 
@@ -189,6 +198,8 @@ void Game::updateTrapdoor() {
 }
 
 void Game::goToNextFloor() {
+    audio.stopBossMusic();
+    audio.playMusic();
     currentFloor++;
     progression.setCurrentFloor(currentFloor);
 
@@ -244,7 +255,26 @@ bool Game::areNormalRoomsCleared() {
 }
 
 void Game::spawnBoss() {
-    bosses.push_back(EnemyBoss(sf::Vector2f(576.f, 360.f)));
+    bosses.clear();
+    bosses.push_back(EnemyBoss(sf::Vector2f(576.f, 420.f)));
+
+    startBossIntro();
+}
+
+void Game::startBossIntro() {
+    bossIntroClock.restart();
+
+    audio.stopMusic();
+    audio.playBossMusic();
+
+    gameState = BossIntroState;
+}
+
+void Game::updateBossIntro() {
+    if (bossIntroClock.getElapsedTime().asSeconds() >= 3.f) {
+        gameState = Playing;
+        frameClock.restart();
+    }
 }
 
 void Game::run() {
@@ -499,23 +529,105 @@ void Game::processEvents() {
 
 void Game::update(float deltaTime) {
     switch (gameState) {
-
     case MainMenuState:
-         break;
+        break;
+
+    case BossIntroState:
+        updateBossIntro();
+        break;
 
     case Playing:
         updatePlaying(deltaTime);
         break;
 
-    case GameOver:
-        updateGameOver();
+    case PausedState:
         break;
 
     case UpgradeMenuState:
         break;
 
-    case PausedState:
+    case GameOver:
+        updateGameOver();
         break;
+    }
+}
+
+void Game::drawBossIntroHud() {
+    float time = bossIntroClock.getElapsedTime().asSeconds();
+    float percent = time / 3.f;
+
+    if (percent > 1.f) {
+        percent = 1.f;
+    }
+
+    float barWidth = 520.f;
+    float barHeight = 24.f;
+
+    float x = window.getSize().x / 2.f - barWidth / 2.f;
+    float y = 28.f;
+
+    sf::RectangleShape back(sf::Vector2f(barWidth, barHeight));
+    back.setPosition(x, y);
+    back.setFillColor(sf::Color(35, 20, 28));
+    back.setOutlineColor(sf::Color(180, 150, 150));
+    back.setOutlineThickness(2.f);
+
+    sf::RectangleShape fill(sf::Vector2f(barWidth * percent, barHeight));
+    fill.setPosition(x, y);
+    fill.setFillColor(sf::Color(160, 20, 45));
+
+    window.draw(back);
+    window.draw(fill);
+
+    if (bossFontLoaded && time >= 3.f) {
+        sf::FloatRect bounds = bossNameText.getLocalBounds();
+
+        bossNameText.setOrigin(
+            bounds.left + bounds.width / 2.f,
+            bounds.top + bounds.height / 2.f
+        );
+
+        bossNameText.setPosition(window.getSize().x / 2.f, y + 56.f);
+        window.draw(bossNameText);
+    }
+}
+
+void Game::drawBossHealthBar() {
+    if (bosses.empty()) {
+        return;
+    }
+
+    float barWidth = 520.f;
+    float barHeight = 24.f;
+
+    float x = window.getSize().x / 2.f - barWidth / 2.f;
+    float y = 28.f;
+
+    float percent = bosses[0].getLifePercent();
+
+    sf::RectangleShape back(sf::Vector2f(barWidth, barHeight));
+    back.setPosition(x, y);
+    back.setFillColor(sf::Color(35, 20, 28));
+    back.setOutlineColor(sf::Color(180, 150, 150));
+    back.setOutlineThickness(2.f);
+
+    sf::RectangleShape fill(sf::Vector2f(barWidth * percent, barHeight));
+    fill.setPosition(x, y);
+    fill.setFillColor(sf::Color(160, 20, 45));
+
+    window.draw(back);
+    window.draw(fill);
+
+    if (bossFontLoaded) {
+        sf::FloatRect bounds = bossNameText.getLocalBounds();
+
+        bossNameText.setOrigin(
+            bounds.left + bounds.width / 2.f,
+            bounds.top + bounds.height / 2.f
+        );
+
+        bossNameText.setPosition(window.getSize().x / 2.f, y + 56.f);
+        window.draw(bossNameText);
     }
 }
 
@@ -641,6 +753,12 @@ void Game::draw() {
 
     player.drawStamina(window);
     player.drawLife(window);
+
+    if (gameState == BossIntroState) {
+    drawBossIntroHud();
+} else if (!bosses.empty()) {
+    drawBossHealthBar();
+    }
 
     if (gameState == PausedState) {
     pauseMenu.draw(window, saveSystem);

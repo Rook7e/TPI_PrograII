@@ -45,6 +45,21 @@ bool AudioManager::load() {
     return ok;
 }
 
+bool AudioManager::playBossMusic() {
+    if (!bossMusic.openFromFile("assets/Sonidos/boss.ogg")) {
+        return false;
+    }
+
+    bossMusic.setLoop(true);
+    bossMusic.play();
+
+    return true;
+}
+
+void AudioManager::stopBossMusic() {
+    bossMusic.stop();
+}
+
 void AudioManager::playMusic() {
     music.play();
 }
