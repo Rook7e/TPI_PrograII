@@ -4,9 +4,11 @@
 #pragma once
 #include <SFML/Audio.hpp>
 
+
 class AudioManager {
 private:
     sf::Music music;
+    sf::Music bossMusic;
 
     sf::SoundBuffer hitBuffer;
     sf::SoundBuffer cleanBuffer;
@@ -21,8 +23,15 @@ private:
 public:
     bool load();
 
-    void playMusic();
-    void stopMusic();
+    // Funciones controladoras de m�sica para las instancias
+    void playMenuMusic();  // Para MenuPrincipal y Tienda
+    void playLevelMusic(); // Para el juego normal
+    void playBossMusic();  // Para la pelea con el Jefe
+    void stopMusic();      // Para frenar limpiamente
+
+    // Efectos de sonido (SFX)
+    //bool playBossMusic();
+    void stopBossMusic();
 
     void playHit();
     void playClean();

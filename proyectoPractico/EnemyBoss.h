@@ -71,6 +71,8 @@ protected:
 public:
     EnemyBoss(sf::Vector2f position);
 
+    float getLifePercent();
+
     void update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
     void draw(sf::RenderWindow& window);
 };

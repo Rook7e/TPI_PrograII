@@ -34,6 +34,7 @@ struct RoomInfo {
 
 enum GameState {
     MainMenuState,
+    BossIntroState,
     Playing,
     PausedState,
     UpgradeMenuState,
@@ -138,6 +139,16 @@ private:
     int activeSaveSlot;
 
     void openSaveSlot(int slot);
+
+    sf::Clock bossIntroClock;
+    sf::Font bossFont;
+    bool bossFontLoaded;
+    sf::Text bossNameText;
+
+    void startBossIntro();
+    void updateBossIntro();
+    void drawBossIntroHud();
+    void drawBossHealthBar();
 
 public:
     Game();
