@@ -30,7 +30,7 @@ public:
     void stopMusic();      // Para frenar limpiamente
 
     // Efectos de sonido (SFX)
-    bool playBossMusic();
+    //bool playBossMusic();
     void stopBossMusic();
 
     void playHit();
