@@ -197,8 +197,8 @@ void Game::updateTrapdoor() {
 }
 
 void Game::goToNextFloor() {
-    audio.stopBossMusic();
-    audio.playMusic();
+    //audio.stopBossMusic();
+    //audio.playMusic();
     currentFloor++;
     progression.setCurrentFloor(currentFloor);
 
