@@ -94,9 +94,9 @@ void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, s
 
     if (state == Repositioning) {
         if (distance > desiredDistance + 30.f) {
-            hitbox.move(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
+            tryMove(sf::Vector2f(direction.x * speed * deltaTime, direction.y * speed * deltaTime), window);
         } else if (distance < desiredDistance - 30.f) {
-            hitbox.move(-direction.x * speed * deltaTime, -direction.y * speed * deltaTime);
+            tryMove(sf::Vector2f(-direction.x * speed * deltaTime, -direction.y * speed * deltaTime), window);
         }
 
         if (hasVision &&
@@ -156,7 +156,6 @@ void EnemyShooter::update(float deltaTime, Player& player, circle& aspiradora, s
         }
     }
 
-    syncSpritePosition();
     updateFacing(directionToPlayer);
 
     updateProjectiles(deltaTime, player, aspiradora, window, tileMap);

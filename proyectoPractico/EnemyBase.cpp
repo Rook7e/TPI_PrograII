@@ -18,7 +18,7 @@ EnemyBase::~EnemyBase() {
 void EnemyBase::syncSpritePosition() {
 }
 
-void EnemyBase::takeDamage(int damage, sf::Vector2f hitPosition) {
+void EnemyBase::takeDamage(int damage, sf::Vector2f hitPosition, sf::RenderWindow& window) {
     if (isDead()) {
         return;
     }
@@ -28,7 +28,7 @@ void EnemyBase::takeDamage(int damage, sf::Vector2f hitPosition) {
     sf::Vector2f knockDirection = normalize(hitbox.getPosition() - hitPosition);
 
     hitbox.move(knockDirection.x * 45.f, knockDirection.y * 45.f);
-    syncSpritePosition();
+    clampToWindow(window);
 
     if (vida < 0) {
         vida = 0;
@@ -75,4 +75,30 @@ void EnemyBase::applyDifficulty(float multiplier) {
     vida = maxVida;
 
     speed *= 1.f + ((multiplier - 1.f) * 0.45f);
+}
+
+bool EnemyBase::tryMove(sf::Vector2f movement, sf::RenderWindow& window)
+{
+    hitbox.move(movement);
+    clampToWindow(window);
+    return true;
+}
+
+void EnemyBase::clampToWindow(sf::RenderWindow& window)
+{
+    sf::FloatRect bounds = hitbox.getGlobalBounds();
+
+    if (bounds.left < 0.f)
+        hitbox.move(-bounds.left, 0.f);
+
+    if (bounds.top < 0.f)
+        hitbox.move(0.f, -bounds.top);
+
+    if (bounds.left + bounds.width > window.getSize().x)
+        hitbox.move(window.getSize().x - (bounds.left + bounds.width), 0.f);
+
+    if (bounds.top + bounds.height > window.getSize().y)
+        hitbox.move(0.f, window.getSize().y - (bounds.top + bounds.height));
+
+    syncSpritePosition();
 }

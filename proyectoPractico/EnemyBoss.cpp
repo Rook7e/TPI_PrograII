@@ -139,7 +139,7 @@ void EnemyBoss::update(float deltaTime, Player& player, circle& aspiradora, sf::
             direction.y * speed * deltaTime
         );
 
-        tryMove(movement, window, tileMap);
+        tryMove(movement, window);
     }
 
         if (dashTimer >= dashCooldown &&
@@ -174,7 +174,7 @@ void EnemyBoss::update(float deltaTime, Player& player, circle& aspiradora, sf::
                     dashDirection.y * dashSpeed * deltaTime
                 );
 
-                bool moved = tryMove(movement, window, tileMap);
+                bool moved = tryMove(movement, window);
 
                 if (!moved || stateTimer >= dashDuration) {
                     state = BossChargingShot;
@@ -207,7 +207,7 @@ void EnemyBoss::update(float deltaTime, Player& player, circle& aspiradora, sf::
                 wallDashDirection.y * wallDashSpeed * deltaTime
         );
 
-        bool moved = tryMove(movement, window, tileMap);
+        bool moved = tryMove(movement, window);
 
         if (!moved || stateTimer >= wallDashMaxDuration) {
             wallDashCount++;
@@ -392,58 +392,6 @@ void EnemyBoss::draw(sf::RenderWindow& window) {
     }
 
     return (float)vida / maxVida;
-}
-
-bool EnemyBoss::tryMove(sf::Vector2f movement, sf::RenderWindow& window, TileMap& tileMap) {
-    sf::FloatRect nextBounds = hitbox.getGlobalBounds();
-
-    nextBounds.left += movement.x;
-    nextBounds.top += movement.y;
-
-    if (nextBounds.left < 0.f) {
-        hitbox.setPosition(
-            hitbox.getPosition().x - nextBounds.left,
-            hitbox.getPosition().y
-        );
-        syncSpritePosition();
-        return false;
-    }
-
-    if (nextBounds.top < 0.f) {
-        hitbox.setPosition(
-            hitbox.getPosition().x,
-            hitbox.getPosition().y - nextBounds.top
-        );
-        syncSpritePosition();
-        return false;
-    }
-
-    if (nextBounds.left + nextBounds.width > window.getSize().x) {
-        float overflow = (nextBounds.left + nextBounds.width) - window.getSize().x;
-
-        hitbox.setPosition(
-            hitbox.getPosition().x - overflow,
-            hitbox.getPosition().y
-        );
-        syncSpritePosition();
-        return false;
-    }
-
-    if (nextBounds.top + nextBounds.height > window.getSize().y) {
-        float overflow = (nextBounds.top + nextBounds.height) - window.getSize().y;
-
-        hitbox.setPosition(
-            hitbox.getPosition().x,
-            hitbox.getPosition().y - overflow
-        );
-        syncSpritePosition();
-        return false;
-    }
-
-    hitbox.move(movement);
-    syncSpritePosition();
-
-    return true;
 }
 
 void EnemyBoss::startWallDash(sf::Vector2f targetPosition) {

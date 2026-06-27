@@ -63,7 +63,7 @@ void EnemyChaser::updateFacing(sf::Vector2f direction) {
     }
 }
 
-void EnemyChaser::update(float deltaTime, Player& player) {
+void EnemyChaser::update(float deltaTime, Player& player, sf::RenderWindow& window) {
     if (isDead()) {
         return;
     }
@@ -84,7 +84,7 @@ void EnemyChaser::update(float deltaTime, Player& player) {
                    (horizontallyAligned || verticallyAligned);
 
     if (state == Chasing) {
-        hitbox.move(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
+        tryMove(sf::Vector2f(direction.x * speed * deltaTime, direction.y * speed * deltaTime),window);
 
         if (canDash) {
             state = ChargingDash;
@@ -101,10 +101,7 @@ void EnemyChaser::update(float deltaTime, Player& player) {
             stateTimer = 0.f;
         }
     } else if (state == Dashing) {
-        hitbox.move(
-            dashDirection.x * dashSpeed * deltaTime,
-            dashDirection.y * dashSpeed * deltaTime
-        );
+        tryMove(sf::Vector2f(dashDirection.x * dashSpeed * deltaTime, dashDirection.y * dashSpeed * deltaTime), window);
 
         if (stateTimer >= dashDuration) {
             state = Recovering;
@@ -126,7 +123,6 @@ void EnemyChaser::update(float deltaTime, Player& player) {
         }
     }
 
-    syncSpritePosition();
     updateFacing(rawDirection);
 
     if (hitbox.getGlobalBounds().intersects(player.getBounds()) &&

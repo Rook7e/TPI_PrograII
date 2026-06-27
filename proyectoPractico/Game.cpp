@@ -993,7 +993,7 @@ void Game::updateMessCleaning(float deltaTime) {
 
 void Game::updateEnemies(float deltaTime) {
     for (int i = 0; i < chasers.size(); i++) {
-        chasers[i].update(deltaTime, player);
+        chasers[i].update(deltaTime, player, window);
     }
 
     for (int i = 0; i < shooters.size(); i++) {
@@ -1018,7 +1018,7 @@ void Game::applyVacuumDamage() {
     for (int i = 0; i < chasers.size(); i++) {
         if (!chasers[i].isDead() &&
             aspiradora.getBounds().intersects(chasers[i].getBounds())) {
-            chasers[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition());
+            chasers[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition(), window);
             hitSomething = true;
         }
     }
@@ -1026,7 +1026,7 @@ void Game::applyVacuumDamage() {
     for (int i = 0; i < shooters.size(); i++) {
         if (!shooters[i].isDead() &&
             aspiradora.getBounds().intersects(shooters[i].getBounds())) {
-            shooters[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition());
+            shooters[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition(), window);
             hitSomething = true;
         }
     }
@@ -1034,7 +1034,7 @@ void Game::applyVacuumDamage() {
     for (int i = 0; i < throwers.size(); i++) {
         if (!throwers[i].isDead() &&
             aspiradora.getBounds().intersects(throwers[i].getBounds())) {
-            throwers[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition());
+            throwers[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition(), window);
             hitSomething = true;
         }
     }
@@ -1043,7 +1043,7 @@ void Game::applyVacuumDamage() {
     for (int i = 0; i < bosses.size(); i++) {
         if (!bosses[i].isDead() &&
             aspiradora.getBounds().intersects(bosses[i].getBounds())) {
-            bosses[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition());
+            bosses[i].takeDamage(progression.getVacuumDamage(), aspiradora.getPosition(), window);
             hitSomething = true;
         }
     }
