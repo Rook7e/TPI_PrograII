@@ -64,3 +64,15 @@ void EnemyBase::drawHealthBar(sf::RenderWindow& window, float width) {
     window.draw(back);
     window.draw(bar);
 }
+
+void EnemyBase::applyDifficulty(float multiplier) {
+    maxVida = (int)(maxVida * multiplier);
+
+    if (maxVida < 1) {
+        maxVida = 1;
+    }
+
+    vida = maxVida;
+
+    speed *= 1.f + ((multiplier - 1.f) * 0.45f);
+}

@@ -13,6 +13,8 @@
 enum BossState {
     BossMoving,
     BossSideDashing,
+    BossWallDashCharging,
+    BossWallDashing,
     BossChargingShot,
     BossBurstShooting,
     BossRecovering
@@ -57,6 +59,20 @@ private:
 
     float throwTimer;
     float throwCooldown;
+
+    bool phaseTwo;
+
+    int wallDashCount;
+    int maxWallDashes;
+
+    float wallDashChargeDuration;
+    float wallDashMaxDuration;
+    float wallDashSpeed;
+
+    sf::Vector2f wallDashDirection;
+
+    bool tryMove(sf::Vector2f movement, sf::RenderWindow& window, TileMap& tileMap);
+    void startWallDash(sf::Vector2f targetPosition);
 
     void updateFacing(sf::Vector2f direction);
     void updateProjectiles(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
