@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 #include <string>
 
 Game::Game(): window(sf::VideoMode(1152, 864), "Proyecto Practico")
@@ -254,10 +255,34 @@ bool Game::areNormalRoomsCleared() {
 }
 
 void Game::spawnBoss() {
-    bosses.push_back(EnemyBoss(sf::Vector2f(576.f, 360.f)));
-    audio.playBossMusic();
     bosses.clear();
-    bosses.push_back(EnemyBoss(sf::Vector2f(576.f, 420.f)));
+
+    int bossCount = 1;
+
+    if (currentFloor >= 5) {
+        bossCount = 2;
+    }
+
+    if (currentFloor >= 10) {
+        bossCount = 3;
+    }
+
+    if (currentFloor >= 15) {
+        bossCount = 4;
+    }
+
+    for (int i = 0; i < bossCount; i++) {
+        float x = 576.f;
+        float y = 420.f;
+
+        if (bossCount == 2) {
+            x = 460.f + i * 230.f;
+        } else if (bossCount >= 3) {
+            x = 360.f + i * 210.f;
+        }
+
+        addBoss(sf::Vector2f(x, y));
+    }
 
     startBossIntro();
 }
@@ -869,13 +894,39 @@ sf::Vector2f Game::randomMessPosition() {
 }
 
 void Game::spawnInitialEnemies() {
-    chasers.push_back(EnemyChaser(sf::Vector2f(700.f, 100.f)));
+    int chaserCount = 1;
+    int shooterCount = 1;
+    int throwerCount = 1;
 
+    if (currentFloor >= 2) {
+        chaserCount = 2;
+    }
 
-    shooters.push_back(EnemyShooter(sf::Vector2f(650.f, 500.f)));
+    if (currentFloor >= 3) {
+        shooterCount = 2;
+    }
 
+    if (currentFloor >= 4) {
+        throwerCount = 2;
+    }
 
-    throwers.push_back(EnemyThrower(sf::Vector2f(200.f, 500.f)));
+    if (currentFloor >= 5) {
+        chaserCount += (currentFloor - 4) / 2;
+        shooterCount += (currentFloor - 4) / 3;
+        throwerCount += (currentFloor - 4) / 4;
+    }
+
+    for (int i = 0; i < chaserCount; i++) {
+        addChaser(sf::Vector2f(250.f + i * 90.f, 220.f));
+    }
+
+    for (int i = 0; i < shooterCount; i++) {
+        addShooter(sf::Vector2f(780.f - i * 90.f, 260.f));
+    }
+
+    for (int i = 0; i < throwerCount; i++) {
+        addThrower(sf::Vector2f(300.f + i * 120.f, 620.f));
+    }
 }
 
 void Game::spawnInitialMess() {
@@ -1045,6 +1096,34 @@ void Game::removeDeadEnemies() {
 }
 }
 
+    float Game::getDifficultyMultiplier() {
+        return std::pow(1.2f, currentFloor - 1);
+    }
+
+    void Game::addChaser(sf::Vector2f position) {
+        EnemyChaser enemy(position);
+        enemy.applyDifficulty(getDifficultyMultiplier());
+        chasers.push_back(enemy);
+    }
+
+    void Game::addShooter(sf::Vector2f position) {
+        EnemyShooter enemy(position);
+        enemy.applyDifficulty(getDifficultyMultiplier());
+        shooters.push_back(enemy);
+    }
+
+    void Game::addThrower(sf::Vector2f position) {
+        EnemyThrower enemy(position);
+        enemy.applyDifficulty(getDifficultyMultiplier());
+        throwers.push_back(enemy);
+    }
+
+    void Game::addBoss(sf::Vector2f position) {
+        EnemyBoss boss(position);
+        boss.applyDifficulty(getDifficultyMultiplier());
+        bosses.push_back(boss);
+}
+
 void Game::checkMapProgress() {
     if (enemiesKilled >= enemiesNeededForNextMap) {
         waitingForCleaning = true;
@@ -1054,25 +1133,29 @@ void Game::checkMapProgress() {
 void Game::updateSpawns() {
     RoomInfo& room = rooms[currentRoomY][currentRoomX];
 
-    if (room.cleared) {
+    if (room.cleared || isBossRoom(currentRoomX, currentRoomY)) {
         return;
     }
 
+    int maxChasers = 1 + currentFloor;
+    int maxShooters = 1 + currentFloor / 2;
+    int maxThrowers = 1 + currentFloor / 3;
+
     if (spawnShooterClock.getElapsedTime().asSeconds() >= 6.f &&
-        shooters.size() < 3) {
-        shooters.push_back(EnemyShooter(randomSpawn()));
+        shooters.size() < maxShooters) {
+        addShooter(randomSpawn());
         spawnShooterClock.restart();
     }
 
     if (spawnChaserClock.getElapsedTime().asSeconds() >= 6.f &&
-        chasers.size() < 5) {
-        chasers.push_back(EnemyChaser(randomSpawn()));
+        chasers.size() < maxChasers) {
+        addChaser(randomSpawn());
         spawnChaserClock.restart();
     }
 
     if (spawnThrowerClock.getElapsedTime().asSeconds() >= 8.f &&
-        throwers.size() < 2) {
-        throwers.push_back(EnemyThrower(randomSpawn()));
+        throwers.size() < maxThrowers) {
+        addThrower(randomSpawn());
         spawnThrowerClock.restart();
     }
 }

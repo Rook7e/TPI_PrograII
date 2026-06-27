@@ -59,9 +59,20 @@ EnemyBoss::EnemyBoss(sf::Vector2f position)
     chargeDuration = 0.5f;
     recoverDuration = 0.7f;
 
-    fanShotCount = 20;
+    fanShotCount = 25;
     fanShotIndex = 0;
     fanAngle = 100.f;
+
+    phaseTwo = false;
+
+    wallDashCount = 0;
+    maxWallDashes = 3;
+
+    wallDashChargeDuration = 0.35f;
+    wallDashMaxDuration = 1.2f;
+    wallDashSpeed = 620.f;
+
+    wallDashDirection = sf::Vector2f(0.f, 0.f);
 }
 
 void EnemyBoss::syncSpritePosition() {
@@ -107,45 +118,114 @@ void EnemyBoss::update(float deltaTime, Player& player, circle& aspiradora, sf::
     sf::Vector2f direction = normalize(directionToPlayer);
     float distance = vectorLength(directionToPlayer);
 
+    if (!phaseTwo && getLifePercent() <= 0.5f) {
+    phaseTwo = true;
+
+    dashCooldown = 1.4f;
+    shootCooldown = 0.9f;
+    fanShotCount = 28;
+    fanAngle = 135.f;
+
+    wallDashCount = 0;
+    startWallDash(player.getCenter());
+
+    return;
+}
+
     if (state == BossMoving) {
-        if (distance > 180.f) {
-            hitbox.move(direction.x * speed * deltaTime, direction.y * speed * deltaTime);
-        }
+    if (distance > 180.f) {
+        sf::Vector2f movement(
+            direction.x * speed * deltaTime,
+            direction.y * speed * deltaTime
+        );
+
+        tryMove(movement, window, tileMap);
+    }
 
         if (dashTimer >= dashCooldown &&
             tileMap.hasLineOfSight(hitbox.getPosition(), player.getCenter())) {
-            sf::Vector2f sideDirection(-direction.y, direction.x);
 
-            if (std::rand() % 2 == 0) {
-                sideDirection.x *= -1.f;
-                sideDirection.y *= -1.f;
-            }
-
-            dashDirection = sideDirection;
             dashTimer = 0.f;
             stateTimer = 0.f;
-            state = BossSideDashing;
 
-            if (textureLoaded) {
-                sprite.setColor(sf::Color(255, 160, 120));
+            if (phaseTwo && std::rand() % 2 == 0) {
+                wallDashCount = 0;
+                startWallDash(player.getCenter());
+            } else {
+                sf::Vector2f sideDirection(-direction.y, direction.x);
+
+                if (std::rand() % 2 == 0) {
+                    sideDirection.x *= -1.f;
+                    sideDirection.y *= -1.f;
+                }
+
+                dashDirection = sideDirection;
+                state = BossSideDashing;
+
+                if (textureLoaded) {
+                    sprite.setColor(sf::Color(255, 160, 120));
+                }
             }
         }
-    } else if (state == BossSideDashing) {
-        hitbox.move(
-            dashDirection.x * dashSpeed * deltaTime,
-            dashDirection.y * dashSpeed * deltaTime
+    }
+                else if (state == BossSideDashing) {
+                sf::Vector2f movement(
+                    dashDirection.x * dashSpeed * deltaTime,
+                    dashDirection.y * dashSpeed * deltaTime
+                );
+
+                bool moved = tryMove(movement, window, tileMap);
+
+                if (!moved || stateTimer >= dashDuration) {
+                    state = BossChargingShot;
+                    stateTimer = 0.f;
+                    lastShotDirection = player.getCenter() - hitbox.getPosition();
+
+                    if (textureLoaded) {
+                        sprite.setColor(sf::Color(140, 220, 255));
+                    }
+                }
+            }
+
+                else if (state == BossWallDashCharging) {
+            wallDashDirection = normalize(player.getCenter() - hitbox.getPosition());
+            updateFacing(wallDashDirection);
+
+            if (stateTimer >= wallDashChargeDuration) {
+                state = BossWallDashing;
+                stateTimer = 0.f;
+
+                if (textureLoaded) {
+                    sprite.setColor(sf::Color(255, 255, 255));
+                }
+            }
+        }
+
+    else if (state == BossWallDashing) {
+            sf::Vector2f movement(
+                wallDashDirection.x * wallDashSpeed * deltaTime,
+                wallDashDirection.y * wallDashSpeed * deltaTime
         );
 
-        if (stateTimer >= dashDuration) {
-            state = BossChargingShot;
-            stateTimer = 0.f;
-            lastShotDirection = player.getCenter() - hitbox.getPosition();
+        bool moved = tryMove(movement, window, tileMap);
 
-            if (textureLoaded) {
-                sprite.setColor(sf::Color(140, 220, 255));
+        if (!moved || stateTimer >= wallDashMaxDuration) {
+            wallDashCount++;
+
+            if (wallDashCount < maxWallDashes) {
+                    startWallDash(player.getCenter());
+            } else {
+                state = BossRecovering;
+                stateTimer = 0.f;
+
+                if (textureLoaded) {
+                    sprite.setColor(sf::Color(180, 180, 180));
+                }
             }
         }
-    } else if (state == BossChargingShot) {
+    }
+
+     else if (state == BossChargingShot) {
         lastShotDirection = player.getCenter() - hitbox.getPosition();
 
         if (stateTimer >= chargeDuration) {
@@ -158,7 +238,8 @@ void EnemyBoss::update(float deltaTime, Player& player, circle& aspiradora, sf::
                 sprite.setColor(sf::Color(255, 255, 255));
             }
         }
-    } else if (state == BossBurstShooting) {
+    }
+     else if (state == BossBurstShooting) {
         burstShotTimer += deltaTime;
 
         if (fanShotIndex < fanShotCount && burstShotTimer >= burstShotDelay) {
@@ -311,4 +392,73 @@ void EnemyBoss::draw(sf::RenderWindow& window) {
     }
 
     return (float)vida / maxVida;
+}
+
+bool EnemyBoss::tryMove(sf::Vector2f movement, sf::RenderWindow& window, TileMap& tileMap) {
+    sf::FloatRect nextBounds = hitbox.getGlobalBounds();
+
+    nextBounds.left += movement.x;
+    nextBounds.top += movement.y;
+
+    if (nextBounds.left < 0.f) {
+        hitbox.setPosition(
+            hitbox.getPosition().x - nextBounds.left,
+            hitbox.getPosition().y
+        );
+        syncSpritePosition();
+        return false;
+    }
+
+    if (nextBounds.top < 0.f) {
+        hitbox.setPosition(
+            hitbox.getPosition().x,
+            hitbox.getPosition().y - nextBounds.top
+        );
+        syncSpritePosition();
+        return false;
+    }
+
+    if (nextBounds.left + nextBounds.width > window.getSize().x) {
+        float overflow = (nextBounds.left + nextBounds.width) - window.getSize().x;
+
+        hitbox.setPosition(
+            hitbox.getPosition().x - overflow,
+            hitbox.getPosition().y
+        );
+        syncSpritePosition();
+        return false;
+    }
+
+    if (nextBounds.top + nextBounds.height > window.getSize().y) {
+        float overflow = (nextBounds.top + nextBounds.height) - window.getSize().y;
+
+        hitbox.setPosition(
+            hitbox.getPosition().x,
+            hitbox.getPosition().y - overflow
+        );
+        syncSpritePosition();
+        return false;
+    }
+
+    hitbox.move(movement);
+    syncSpritePosition();
+
+    return true;
+}
+
+void EnemyBoss::startWallDash(sf::Vector2f targetPosition) {
+    wallDashDirection = normalize(targetPosition - hitbox.getPosition());
+
+    if (vectorLength(wallDashDirection) == 0.f) {
+        wallDashDirection = sf::Vector2f(1.f, 0.f);
+    }
+
+    state = BossWallDashCharging;
+    stateTimer = 0.f;
+
+    updateFacing(wallDashDirection);
+
+    if (textureLoaded) {
+        sprite.setColor(sf::Color(255, 80, 80));
+    }
 }

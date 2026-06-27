@@ -150,6 +150,13 @@ private:
     void drawBossIntroHud();
     void drawBossHealthBar();
 
+    float getDifficultyMultiplier();
+
+    void addChaser(sf::Vector2f position);
+    void addShooter(sf::Vector2f position);
+    void addThrower(sf::Vector2f position);
+    void addBoss(sf::Vector2f position);
+
 public:
     Game();
     void run();

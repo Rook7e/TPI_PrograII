@@ -32,7 +32,7 @@ bool AudioManager::load() {
     mapChangeSound.setBuffer(mapChangeBuffer);
 
     // Ajustes de volumen razonables (SFML maneja rango de 0 a 100)
-    hitSound.setVolume(80.f);
+    hitSound.setVolume(5.f);
     cleanSound.setVolume(45.f);
     medkitSound.setVolume(70.f);
     mapChangeSound.setVolume(80.f);
@@ -40,7 +40,7 @@ bool AudioManager::load() {
     return ok;
 }
 
-// --- M�todos de reproducci�n de m�sica ---
+// --- Metodos de reproduccion de musica ---
 
 void AudioManager::playMenuMusic() {
     music.stop();

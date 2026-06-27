@@ -25,6 +25,8 @@ public:
     bool isDead();
     sf::FloatRect getBounds();
     sf::Vector2f getPosition();
+
+    void applyDifficulty(float multiplier);
 };
 
 #endif
