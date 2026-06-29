@@ -42,7 +42,7 @@ protected:
 public:
     EnemyChaser(sf::Vector2f position);
 
-    void update(float deltaTime, Player& player);
+    void update(float deltaTime, Player& player, sf::RenderWindow& window);
     void draw(sf::RenderWindow& window);
 };
 

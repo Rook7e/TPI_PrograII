@@ -15,13 +15,16 @@ protected:
     virtual void syncSpritePosition();
     void drawHealthBar(sf::RenderWindow& window, float width);
 
+    bool tryMove(sf::Vector2f movement, sf::RenderWindow& window);
+    void clampToWindow(sf::RenderWindow& window);
+
 public:
     EnemyBase(sf::Vector2f position, float radius, float speed, int maxVida);
     virtual ~EnemyBase();
 
     virtual void draw(sf::RenderWindow& window) = 0;
 
-    void takeDamage(int damage, sf::Vector2f hitPosition);
+    void takeDamage(int damage, sf::Vector2f hitPosition, sf::RenderWindow& window);
     bool isDead();
     sf::FloatRect getBounds();
     sf::Vector2f getPosition();

@@ -71,14 +71,12 @@ private:
 
     sf::Vector2f wallDashDirection;
 
-    bool tryMove(sf::Vector2f movement, sf::RenderWindow& window, TileMap& tileMap);
     void startWallDash(sf::Vector2f targetPosition);
-
-    void updateFacing(sf::Vector2f direction);
     void updateProjectiles(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
     void updateFurnitureProjectiles(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap);
     sf::Vector2f rotateVector(sf::Vector2f vector, float degrees);
 
+    void updateFacing(sf::Vector2f direction);
 
 
 protected:

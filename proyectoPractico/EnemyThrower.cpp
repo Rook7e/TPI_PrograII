@@ -84,12 +84,7 @@ void EnemyThrower::update(float deltaTime, Player& player, circle& aspiradora, s
             sf::Vector2f direction =
                 normalize(furniturePos - hitbox.getPosition());
 
-            hitbox.move(
-                direction.x * speed * deltaTime,
-                direction.y * speed * deltaTime
-            );
-
-            syncSpritePosition();
+            tryMove(sf::Vector2f(direction.x * speed * deltaTime, direction.y * speed * deltaTime), window);
 
             float distance =
                 vectorLength(furniturePos - hitbox.getPosition());
@@ -131,12 +126,7 @@ void EnemyThrower::update(float deltaTime, Player& player, circle& aspiradora, s
      else if (!tileMap.hasAnyFurniture()){
          sf::Vector2f direction = normalize(player.getCenter() - hitbox.getPosition());
 
-         hitbox.move(
-         direction.x * speed * deltaTime,
-         direction.y * speed * deltaTime
-         );
-
-         syncSpritePosition();
+         tryMove(sf::Vector2f(direction.x * speed * deltaTime, direction.y * speed * deltaTime), window);
 
          if (hitbox.getGlobalBounds().intersects(player.getBounds()) && damageTimer >= damageCooldown) {
              player.takeDamage(1);
