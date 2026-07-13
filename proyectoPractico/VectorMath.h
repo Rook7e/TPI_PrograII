@@ -5,10 +5,14 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 
+// Devuelve la longitud de un vector 2D.
+// Se usa para calcular distancias entre enemigo, jugador, proyectiles, etc.
 inline float vectorLength(sf::Vector2f vector) {
     return std::sqrt(vector.x * vector.x + vector.y * vector.y);
 }
 
+// Convierte un vector a direccion de largo 1.
+// Si el vector mide 0, devuelve (0, 0) para evitar dividir por cero.
 inline sf::Vector2f normalize(sf::Vector2f vector) {
     float length = vectorLength(vector);
 

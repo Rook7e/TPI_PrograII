@@ -5,6 +5,7 @@ Progression::Progression() {
 }
 
 void Progression::reset() {
+    // Reinicio completo de la run.
     score = 0;
     gold = 0;
     deaths = 0;
@@ -27,6 +28,7 @@ void Progression::addGold(int amount) {
 }
 
 float Progression::getFloorMultiplier() {
+    // Aumenta recompensas un 15% por piso.
     return 1.f + (currentFloor - 1) * 0.15f;
 }
 
@@ -196,6 +198,7 @@ void Progression::loadState(
     int capacityLevel,
     float storedTrash)
 {
+    // Carga datos desde SaveData.
     score = newScore;
     gold = newGold;
     deaths = newDeaths;
@@ -205,6 +208,12 @@ void Progression::loadState(
     vacuumCapacityLevel = capacityLevel;
     trashStored = storedTrash;
 
-    if (trashStored < 0.f) trashStored = 0.f;
-    if (trashStored > getTrashCapacity()) trashStored = getTrashCapacity();
+    // Clamp para evitar valores invalidos de partidas guardadas.
+    if (trashStored < 0.f) {
+        trashStored = 0.f;
+    }
+
+    if (trashStored > getTrashCapacity()) {
+        trashStored = getTrashCapacity();
+    }
 }

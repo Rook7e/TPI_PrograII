@@ -3,6 +3,8 @@
 
 #pragma once
 
+// Header "agrupador".
+// Permite incluir todos los enemigos desde un solo archivo.
 #include "EnemyBase.h"
 #include "Projectile.h"
 #include "FurnitureProjectile.h"

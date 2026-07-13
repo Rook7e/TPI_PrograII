@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 
+// Texturas estaticas compartidas por todas las mugres.
 sf::Texture mess::texture1;
 sf::Texture mess::texture2;
 sf::Texture mess::ghostTexture;
@@ -12,6 +13,7 @@ bool mess::ghostTextureLoaded = false;
 bool mess::triedLoad = false;
 
 mess::mess(sf::Vector2f position, int type) {
+    // Hitbox base de la mugre.
     shape.setRadius(14.f);
     shape.setFillColor(sf::Color(70, 45, 25));
     shape.setOrigin(14.f, 14.f);
@@ -19,50 +21,53 @@ mess::mess(sf::Vector2f position, int type) {
 
     hasSprite = false;
 
+    // Cargamos texturas una sola vez.
     if (!triedLoad) {
         texture1Loaded = texture1.loadFromFile("assets/Extras/mess.png");
         texture2Loaded = texture2.loadFromFile("assets/Extras/mess2.png");
         ghostTextureLoaded = ghostTexture.loadFromFile("assets/Extras/cum.png");
 
         if (!texture1Loaded) {
-            std::cout << "Error al cargar assets/mess.png" << std::endl;
+            std::cout << "Error al cargar assets/Extras/mess.png" << std::endl;
         }
 
         if (!texture2Loaded) {
-            std::cout << "Error al cargar assets/mess2.png" << std::endl;
+            std::cout << "Error al cargar assets/Extras/mess2.png" << std::endl;
         }
 
         if (!ghostTextureLoaded) {
-            std::cout << "Error al cargar assets/cum.png" << std::endl;
+            std::cout << "Error al cargar assets/Extras/cum.png" << std::endl;
         }
 
         triedLoad = true;
     }
 
+    // Si type es -1, elegimos mugre normal aleatoria.
     if (type == -1) {
         spriteType = rand() % 2;
     } else {
         spriteType = type;
     }
 
-        if (spriteType == 0) {
-            density = 1.f;
-            scoreValue = 10;
-            goldValue = 1;
-            cleanTime = 0.25f;
-        } else if (spriteType == 1) {
-            density = 2.f;
-            scoreValue = 18;
-            goldValue = 2;
-            cleanTime = 0.7f;
-        } else {
-            density = 3.f;
-            scoreValue = 30;
-            goldValue = 4;
-            cleanTime = 1.2f;
-        }
+    // Cada tipo de mugre tiene distinta densidad, recompensa y tiempo de limpieza.
+    if (spriteType == 0) {
+        density = 1.f;
+        scoreValue = 10;
+        goldValue = 1;
+        cleanTime = 0.25f;
+    } else if (spriteType == 1) {
+        density = 2.f;
+        scoreValue = 18;
+        goldValue = 2;
+        cleanTime = 0.7f;
+    } else {
+        density = 3.f;
+        scoreValue = 30;
+        goldValue = 4;
+        cleanTime = 1.2f;
+    }
 
-cleanProgress = 0.f;
+    cleanProgress = 0.f;
 
     sf::Texture* selectedTexture = NULL;
 
@@ -74,6 +79,7 @@ cleanProgress = 0.f;
         selectedTexture = &ghostTexture;
     }
 
+    // Si hay textura valida, usamos sprite.
     if (selectedTexture != NULL) {
         sprite.setTexture(*selectedTexture);
 
@@ -97,6 +103,7 @@ void mess::draw(sf::RenderWindow& window) {
         window.draw(shape);
     }
 
+    // Barra de progreso visible solo mientras se esta limpiando.
     if (cleanProgress > 0.f && cleanProgress < cleanTime) {
         sf::RectangleShape back(sf::Vector2f(28.f, 4.f));
         back.setFillColor(sf::Color(35, 25, 20));
@@ -128,6 +135,7 @@ int mess::getGoldValue() {
 }
 
 void mess::updateCleaning(float deltaTime) {
+    // Avanza limpieza segun tiempo real.
     cleanProgress += deltaTime;
 
     if (cleanProgress > cleanTime) {

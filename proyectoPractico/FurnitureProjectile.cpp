@@ -7,20 +7,20 @@ FurnitureProjectile::FurnitureProjectile(
     sf::Vector2f direction,
     int furnitureId)
 {
+    // Usa la textura del tileset para que el proyectil parezca un objeto del mapa.
     sprite.setTexture(tileset);
 
-    if(furnitureId == 12)
-    {
+    // Elegimos que region del tileset usar segun el ID del mueble.
+    if (furnitureId == 12) {
         sprite.setTextureRect(sf::IntRect(384, 0, 32, 32));
-    }
-    else if(furnitureId == 14)
-    {
+    } else if (furnitureId == 14) {
         sprite.setTextureRect(sf::IntRect(448, 0, 32, 32));
     }
 
     sprite.setOrigin(16.f, 16.f);
     sprite.setPosition(position);
 
+    // Normalizamos direccion hacia el jugador.
     direction = normalize(direction);
 
     velocity.x = direction.x * 250.f;

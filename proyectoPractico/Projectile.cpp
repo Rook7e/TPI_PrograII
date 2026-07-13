@@ -2,24 +2,28 @@
 #include "VectorMath.h"
 #include <iostream>
 
+// Textura compartida por todos los proyectiles.
 sf::Texture Projectile::texture;
 bool Projectile::textureLoaded = false;
 
 Projectile::Projectile(sf::Vector2f position, sf::Vector2f direction) {
+    // Hitbox circular del proyectil.
     shape.setRadius(8.f);
     shape.setFillColor(sf::Color::Transparent);
     shape.setOrigin(8.f, 8.f);
     shape.setPosition(position);
 
+    // Cargamos la textura una sola vez.
     if (!textureLoaded) {
         if (texture.loadFromFile("assets/Extras/Ectoplasma.png")) {
             textureLoaded = true;
         } else {
-            std::cout << "Error al cargar assets/Ectoplasma.png" << std::endl;
+            std::cout << "Error al cargar assets/Extras/Ectoplasma.png" << std::endl;
             shape.setFillColor(sf::Color::Yellow);
         }
     }
 
+    // Datos de animacion.
     currentFrame = 0;
     animationTimer = 0.f;
     frameTime = 0.08f;
@@ -27,6 +31,7 @@ Projectile::Projectile(sf::Vector2f position, sf::Vector2f direction) {
     if (textureLoaded) {
         sprite.setTexture(texture);
 
+        // La imagen tiene 4 frames horizontales.
         int frameWidth = texture.getSize().x / 4;
         int frameHeight = texture.getSize().y;
 
@@ -38,6 +43,7 @@ Projectile::Projectile(sf::Vector2f position, sf::Vector2f direction) {
         sprite.setPosition(position);
     }
 
+    // Normalizamos direccion y asignamos velocidad.
     direction = normalize(direction);
 
     velocity.x = direction.x * 300.f;
@@ -45,11 +51,14 @@ Projectile::Projectile(sf::Vector2f position, sf::Vector2f direction) {
 }
 
 void Projectile::update(float deltaTime) {
+    // Movemos hitbox.
     shape.move(velocity.x * deltaTime, velocity.y * deltaTime);
 
     if (textureLoaded) {
+        // Movemos sprite.
         sprite.move(velocity.x * deltaTime, velocity.y * deltaTime);
 
+        // Animacion por frames.
         animationTimer += deltaTime;
 
         if (animationTimer >= frameTime) {
