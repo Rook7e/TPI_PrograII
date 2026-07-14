@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 
+// Textura compartida por todos los throwers.
 sf::Texture EnemyThrower::texture;
 bool EnemyThrower::textureLoaded = false;
 
@@ -33,11 +34,15 @@ EnemyThrower::EnemyThrower(sf::Vector2f position)
         hitbox.setFillColor(sf::Color::Blue);
     }
 
+    // Tiempo entre lanzamientos.
     throwTimer = 0.f;
     throwCooldown = 2.f;
+
+    // Dano por contacto.
     damageTimer = 0.f;
     damageCooldown = 0.8f;
 
+    // Estado relacionado con muebles.
     holdingFurniture = false;
     targetingFurniture = false;
     targetFurnitureTile = sf::Vector2i(-1, -1);
@@ -47,7 +52,13 @@ void EnemyThrower::syncSpritePosition() {
     sprite.setPosition(hitbox.getPosition());
 }
 
-void EnemyThrower::update(float deltaTime, Player& player, circle& aspiradora, sf::RenderWindow& window, TileMap& tileMap) {
+void EnemyThrower::update(
+    float deltaTime,
+    Player& player,
+    circle& aspiradora,
+    sf::RenderWindow& window,
+    TileMap& tileMap
+) {
     if (isDead()) {
         return;
     }
@@ -57,25 +68,20 @@ void EnemyThrower::update(float deltaTime, Player& player, circle& aspiradora, s
 
     sf::Vector2i furnitureTile;
 
-    if (!targetingFurniture && !holdingFurniture){
-
-        if (tileMap.findNearestFurniture(hitbox.getPosition(), furnitureTile))
-
-        {
+    // Si no tiene objetivo ni mueble en mano, busca el mueble mas cercano.
+    if (!targetingFurniture && !holdingFurniture) {
+        if (tileMap.findNearestFurniture(hitbox.getPosition(), furnitureTile)) {
             targetFurnitureTile = furnitureTile;
             targetingFurniture = true;
         }
-
     }
 
-      if (targetingFurniture){
-
-
-        if (!tileMap.hasFurniture( targetFurnitureTile.x, targetFurnitureTile.y)) {
-                targetingFurniture = false;
-        }
-
-        else{
+    if (targetingFurniture) {
+        // Si el mueble ya no existe, abandona ese objetivo.
+        if (!tileMap.hasFurniture(targetFurnitureTile.x, targetFurnitureTile.y)) {
+            targetingFurniture = false;
+        } else {
+            // Posicion del centro del tile del mueble.
             sf::Vector2f furniturePos(
                 targetFurnitureTile.x * 32.f + 16.f,
                 targetFurnitureTile.y * 32.f + 16.f
@@ -84,63 +90,73 @@ void EnemyThrower::update(float deltaTime, Player& player, circle& aspiradora, s
             sf::Vector2f direction =
                 normalize(furniturePos - hitbox.getPosition());
 
-            tryMove(sf::Vector2f(direction.x * speed * deltaTime, direction.y * speed * deltaTime), window);
+            // Se mueve hacia el mueble.
+            tryMove(
+                sf::Vector2f(direction.x * speed * deltaTime,
+                             direction.y * speed * deltaTime),
+                window
+            );
 
             float distance =
                 vectorLength(furniturePos - hitbox.getPosition());
 
-            if (distance < 1.f){
-
+            // Cuando llega, toma el mueble y lo elimina del mapa.
+            if (distance < 1.f) {
                 carriedFurnitureId =
                     tileMap.getFurnitureId(
                         targetFurnitureTile.x,
-                        targetFurnitureTile.y);
+                        targetFurnitureTile.y
+                    );
 
                 tileMap.removeFurniture(
                     targetFurnitureTile.x,
-                    targetFurnitureTile.y);
+                    targetFurnitureTile.y
+                );
 
                 holdingFurniture = true;
                 targetingFurniture = false;
-                }
             }
+        }
+    } else if (holdingFurniture) {
+        // Si tiene un mueble, espera cooldown y linea de vision para lanzarlo.
+        if (throwTimer >= throwCooldown &&
+            tileMap.hasLineOfSight(hitbox.getPosition(), player.getCenter())) {
 
+            furnitureProjectiles.push_back(
+                FurnitureProjectile(
+                    tileMap.getBuildingTileset(),
+                    hitbox.getPosition(),
+                    player.getCenter() - hitbox.getPosition(),
+                    carriedFurnitureId
+                )
+            );
 
-     }
-     else if(holdingFurniture){
-
-        if (throwTimer >= throwCooldown && tileMap.hasLineOfSight(hitbox.getPosition(),player.getCenter())){
-
-            furnitureProjectiles.push_back(FurnitureProjectile(
-                                                               tileMap.getBuildingTileset(),
-                                                               hitbox.getPosition(),
-                                                               player.getCenter() - hitbox.getPosition(),
-                                                               carriedFurnitureId
-                                                               )
-                                           );
             holdingFurniture = false;
             throwTimer = 0.f;
         }
+    } else if (!tileMap.hasAnyFurniture()) {
+        // Si no quedan muebles, se comporta como perseguidor simple.
+        sf::Vector2f direction = normalize(player.getCenter() - hitbox.getPosition());
 
-     }
-     else if (!tileMap.hasAnyFurniture()){
-         sf::Vector2f direction = normalize(player.getCenter() - hitbox.getPosition());
+        tryMove(
+            sf::Vector2f(direction.x * speed * deltaTime,
+                         direction.y * speed * deltaTime),
+            window
+        );
 
-         tryMove(sf::Vector2f(direction.x * speed * deltaTime, direction.y * speed * deltaTime), window);
+        if (hitbox.getGlobalBounds().intersects(player.getBounds()) &&
+            damageTimer >= damageCooldown) {
+            player.takeDamage(1);
+            damageTimer = 0.f;
+        }
+    }
 
-         if (hitbox.getGlobalBounds().intersects(player.getBounds()) && damageTimer >= damageCooldown) {
-             player.takeDamage(1);
-             damageTimer = 0.f;
-         }
-
-     }
-
-
-
+    // Actualiza proyectiles de muebles.
     for (int i = 0; i < furnitureProjectiles.size(); i++) {
         furnitureProjectiles[i].update(deltaTime);
     }
 
+    // Borra proyectiles que chocan con pared, aspiradora, jugador o salen.
     furnitureProjectiles.erase(
         std::remove_if(
             furnitureProjectiles.begin(),
@@ -177,6 +193,7 @@ void EnemyThrower::draw(sf::RenderWindow& window) {
         window.draw(hitbox);
     }
 
+    // Dibuja muebles lanzados.
     for (int i = 0; i < furnitureProjectiles.size(); i++) {
         furnitureProjectiles[i].draw(window);
     }
