@@ -2,22 +2,28 @@
 #include <iostream>
 
 Player::Player() {
+    // Cargamos la textura del jugador.
     if (!texture.loadFromFile("assets/Entidades/pj_juego.png")) {
-        std::cout << "Error al cargar pj_juego.png" << std::endl;
+        std::cout << "Error al cargar assets/Entidades/pj_juego.png" << std::endl;
     }
 
     sprite.setTexture(texture);
+
+    // Inicializamos todos los valores desde reset para reutilizarlo al reiniciar.
     reset();
 }
 
 void Player::reset() {
+    // Reinicio de animacion.
     currentFrame = 0;
     animationTimer = 0.f;
 
+    // Velocidades base.
     walkSpeed = 4.f;
     runSpeed = 6.f;
     speed = walkSpeed;
 
+    // Sistema de stamina.
     maxStamina = 100.f;
     stamina = maxStamina;
     staminaDrain = 35.f;
@@ -25,25 +31,31 @@ void Player::reset() {
     staminaRegenDelay = 2.f;
     staminaRegenTimer = 0.f;
 
+    // Vida.
     maxVida = 5;
     vida = maxVida;
 
     moving = false;
     running = false;
 
-    sprite.setTextureRect(sf::IntRect(0, 0, 100, 320));
+    // Primer frame del sprite.
+    sprite.setTextureRect(sf::IntRect(0, 0, 320, 320));
+
+    // Escala y origen del personaje.
     sprite.setScale(0.2f, 0.2f);
     sprite.setOrigin(160.f, 0.f);
     sprite.setPosition(100.f, 100.f);
 
+    // Barra de stamina.
     staminaBack.setSize(sf::Vector2f(100.f, 10.f));
-    staminaBack.setFillColor(sf::Color(80, 80, 80));
+    staminaBack.setFillColor(sf::Color(40, 40, 40));
     staminaBack.setPosition(20.f, 20.f);
 
     staminaBar.setSize(sf::Vector2f(100.f, 10.f));
     staminaBar.setFillColor(sf::Color::Green);
     staminaBar.setPosition(20.f, 20.f);
 
+    // Barra de vida.
     healthBack.setSize(sf::Vector2f(100.f, 10.f));
     healthBack.setFillColor(sf::Color(80, 20, 20));
     healthBack.setPosition(20.f, 40.f);
@@ -61,6 +73,7 @@ void Player::movement() {
         sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::RShift);
 
+    // Solo corre si hay stamina.
     running = shiftPressed && stamina > 0.f;
 
     if (running) {
@@ -69,6 +82,7 @@ void Player::movement() {
         speed = walkSpeed;
     }
 
+    // Movimiento horizontal y flip del sprite.
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
         sprite.move(speed, 0.f);
         sprite.setScale(0.2f, 0.2f);
@@ -81,6 +95,7 @@ void Player::movement() {
         moving = true;
     }
 
+    // Movimiento vertical.
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         sprite.move(0.f, -speed);
         moving = true;
@@ -91,6 +106,7 @@ void Player::movement() {
         moving = true;
     }
 
+    // Si no se mueve, no consume stamina corriendo.
     if (!moving) {
         running = false;
     }
@@ -101,6 +117,7 @@ void Player::update(float deltaTime) {
         sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||
         sf::Keyboard::isKeyPressed(sf::Keyboard::RShift);
 
+    // Consumo de stamina al correr y moverse.
     if (running && moving) {
         stamina -= staminaDrain * deltaTime;
         staminaRegenTimer = 0.f;
@@ -111,9 +128,11 @@ void Player::update(float deltaTime) {
             speed = walkSpeed;
         }
     } else {
+        // Si sigue apretando shift, no regenera.
         if (shiftPressed) {
             staminaRegenTimer = 0.f;
         } else {
+            // Regenera despues de un delay.
             staminaRegenTimer += deltaTime;
 
             if (staminaRegenTimer >= staminaRegenDelay) {
@@ -126,9 +145,11 @@ void Player::update(float deltaTime) {
         }
     }
 
+    // Actualiza barra visual de stamina.
     float staminaPercent = stamina / maxStamina;
     staminaBar.setSize(sf::Vector2f(100.f * staminaPercent, 10.f));
 
+    // Animacion de caminata.
     if (moving) {
         animationTimer += deltaTime;
 
@@ -143,6 +164,7 @@ void Player::update(float deltaTime) {
             animationTimer = 0.f;
         }
     } else {
+        // Si esta quieto vuelve al primer frame.
         currentFrame = 0;
         sprite.setTextureRect(sf::IntRect(0, 0, 320, 320));
     }
@@ -172,14 +194,15 @@ sf::Vector2f Player::getCenter() {
 }
 
 sf::FloatRect Player::getBounds() {
-    sf::FloatRect b = sprite.getGlobalBounds();
+    return sprite.getGlobalBounds();
+}
 
-    return sf::FloatRect(
-        b.left + 12.f,
-        b.top + 8.f,
-        b.width - 24.f,
-        b.height - 16.f
-    );
+sf::Vector2f Player::getPosition() {
+    return sprite.getPosition();
+}
+
+void Player::setPosition(sf::Vector2f position) {
+    sprite.setPosition(position);
 }
 
 void Player::takeDamage(int damage) {
@@ -195,22 +218,6 @@ void Player::takeDamage(int damage) {
     std::cout << "Vida player: " << vida << std::endl;
 }
 
-int Player::getVida() {
-    return vida;
-}
-
-bool Player::isDead() {
-    return vida <= 0;
-}
-
-sf::Vector2f Player::getPosition() {
-    return sprite.getPosition();
-}
-
-void Player::setPosition(sf::Vector2f position) {
-    sprite.setPosition(position);
-}
-
 void Player::heal(int amount) {
     vida += amount;
 
@@ -220,6 +227,12 @@ void Player::heal(int amount) {
 
     float lifePercent = (float)vida / maxVida;
     healthBar.setSize(sf::Vector2f(100.f * lifePercent, 10.f));
+}
 
-    std::cout << "Vida player: " << vida << std::endl;
+bool Player::isDead() {
+    return vida <= 0;
+}
+
+int Player::getVida() {
+    return vida;
 }

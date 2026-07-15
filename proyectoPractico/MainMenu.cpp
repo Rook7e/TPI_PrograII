@@ -1,5 +1,7 @@
 #include "MainMenu.h"
 
+// Colores internos del menu.
+// Van en namespace anonimo para que solo existan en este archivo.
 namespace {
 const sf::Color BUTTON_COLOR(48, 49, 62);
 const sf::Color BUTTON_HOVER(76, 68, 92);
@@ -8,25 +10,30 @@ const sf::Color BUTTON_ACCENT(72, 86, 92);
 
 MainMenu::MainMenu() {
     fontLoaded = font.loadFromFile("assets/Menu/menu.ttf");
+
     if (!fontLoaded) {
         fontLoaded = font.loadFromFile("C:/Windows/Fonts/arial.ttf");
     }
 
+    // Boton superior informativo.
     newGameButton.setSize(sf::Vector2f(500.f, 48.f));
+
+    // Boton de salir.
     quitButton.setSize(sf::Vector2f(500.f, 48.f));
 
+    // Botones de ranuras y botones de eliminar.
     for (int i = 0; i < 3; i++) {
-    slotButtons[i].setSize(sf::Vector2f(390.f, 48.f));
-    slotButtons[i].setFillColor(BUTTON_COLOR);
+        slotButtons[i].setSize(sf::Vector2f(390.f, 48.f));
+        slotButtons[i].setFillColor(BUTTON_COLOR);
 
-    deleteButtons[i].setSize(sf::Vector2f(100.f, 48.f));
-    deleteButtons[i].setFillColor(sf::Color(90, 42, 48));
+        deleteButtons[i].setSize(sf::Vector2f(100.f, 48.f));
+        deleteButtons[i].setFillColor(sf::Color(90, 42, 48));
 
-    if (fontLoaded) {
-        setupText(deleteTexts[i], 17);
-        deleteTexts[i].setString("Eliminar");
+        if (fontLoaded) {
+            setupText(deleteTexts[i], 17);
+            deleteTexts[i].setString("Eliminar");
+        }
     }
-}
 
     newGameButton.setFillColor(BUTTON_ACCENT);
     quitButton.setFillColor(sf::Color(65, 43, 50));
@@ -50,8 +57,12 @@ void MainMenu::setupText(sf::Text& text, int size) {
 
 void MainMenu::centerText(sf::Text& text, sf::Vector2f center) {
     sf::FloatRect bounds = text.getLocalBounds();
-    text.setOrigin(bounds.left + bounds.width / 2.f,
-                   bounds.top + bounds.height / 2.f);
+
+    text.setOrigin(
+        bounds.left + bounds.width / 2.f,
+        bounds.top + bounds.height / 2.f
+    );
+
     text.setPosition(center);
 }
 
@@ -61,8 +72,10 @@ void MainMenu::layout(sf::RenderWindow& window) {
     float centerX = size.x / 2.f;
     float firstY = size.y / 2.f - 100.f;
 
+    // Boton de texto "elegi una ranura".
     newGameButton.setPosition(centerX - 250.f, firstY);
 
+    // Ranuras de guardado.
     for (int i = 0; i < 3; i++) {
         float y = firstY + 62.f * (i + 1);
 
@@ -97,27 +110,29 @@ void MainMenu::updateHover(sf::RenderWindow& window) {
     sf::Vector2i pixel = sf::Mouse::getPosition(window);
     sf::Vector2f mouse = window.mapPixelToCoords(pixel);
 
+    // Cambia color al pasar mouse por encima.
     newGameButton.setFillColor(
         newGameButton.getGlobalBounds().contains(mouse)
-            ? BUTTON_HOVER : BUTTON_ACCENT);
+            ? BUTTON_HOVER : BUTTON_ACCENT
+    );
 
     for (int i = 0; i < 3; i++) {
         slotButtons[i].setFillColor(
             slotButtons[i].getGlobalBounds().contains(mouse)
-                ? BUTTON_HOVER : BUTTON_COLOR);
+                ? BUTTON_HOVER : BUTTON_COLOR
+        );
     }
 
     quitButton.setFillColor(
         quitButton.getGlobalBounds().contains(mouse)
-            ? sf::Color(100, 50, 58) : sf::Color(65, 43, 50));
+            ? sf::Color(100, 50, 58) : sf::Color(65, 43, 50)
+    );
 }
 
-MenuAction MainMenu::handleEvent(
-    sf::Event& event,
-    sf::RenderWindow& window
-) {
+MenuAction MainMenu::handleEvent(sf::Event& event, sf::RenderWindow& window) {
     layout(window);
 
+    // Atajos por teclado para cargar ranuras.
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::Num1) {
             return MenuLoadSlot1;
@@ -136,18 +151,17 @@ MenuAction MainMenu::handleEvent(
         }
     }
 
+    // Si no fue click izquierdo, no hace nada.
     if (event.type != sf::Event::MouseButtonPressed ||
         event.mouseButton.button != sf::Mouse::Left) {
         return MenuNone;
     }
 
     sf::Vector2f mouse = window.mapPixelToCoords(
-        sf::Vector2i(
-            event.mouseButton.x,
-            event.mouseButton.y
-        )
+        sf::Vector2i(event.mouseButton.x, event.mouseButton.y)
     );
 
+    // Click en ranuras.
     if (slotButtons[0].getGlobalBounds().contains(mouse)) {
         return MenuLoadSlot1;
     }
@@ -160,6 +174,7 @@ MenuAction MainMenu::handleEvent(
         return MenuLoadSlot3;
     }
 
+    // Click en botones de borrar.
     if (deleteButtons[0].getGlobalBounds().contains(mouse)) {
         return MenuDeleteSlot1;
     }
@@ -181,30 +196,33 @@ MenuAction MainMenu::handleEvent(
 
 void MainMenu::drawBackground(sf::RenderWindow& window) {
     sf::Vector2u size = window.getSize();
+
+    // Fondo oscuro.
     window.clear(sf::Color(12, 12, 18));
 
+    // Niebla/banda inferior.
     sf::RectangleShape haze(sf::Vector2f((float)size.x, size.y * 0.45f));
     haze.setPosition(0.f, size.y * 0.55f);
     haze.setFillColor(sf::Color(28, 27, 38));
     window.draw(haze);
 
+    // Luna.
     sf::CircleShape moon(54.f);
     moon.setPosition(size.x - 180.f, 75.f);
     moon.setFillColor(sf::Color(185, 183, 165));
     window.draw(moon);
 
+    // Sombra para simular luna creciente.
     sf::CircleShape shadow(55.f);
     shadow.setPosition(size.x - 155.f, 62.f);
     shadow.setFillColor(sf::Color(12, 12, 18));
     window.draw(shadow);
 }
 
-void MainMenu::draw(
-    sf::RenderWindow& window,
-    const SaveSystem& saves
-) {
+void MainMenu::draw(sf::RenderWindow& window, const SaveSystem& saves) {
     drawBackground(window);
 
+    // Textos dinamicos.
     titleText.setString("Aprentice`s Mess");
     newGameText.setString("Elegi una ranura para comenzar");
     quitText.setString("Salir [Escapar]");
@@ -217,6 +235,7 @@ void MainMenu::draw(
     layout(window);
     updateHover(window);
 
+    // Dibujamos botones.
     window.draw(newGameButton);
 
     for (int i = 0; i < 3; i++) {
@@ -230,6 +249,7 @@ void MainMenu::draw(
         return;
     }
 
+    // Dibujamos textos.
     window.draw(titleText);
     window.draw(newGameText);
 
