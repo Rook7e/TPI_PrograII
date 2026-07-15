@@ -5,6 +5,7 @@
 #include <cmath>
 #include <string>
 
+// Constructor principal: Inicializa la ventana, configuraciones de audio, niveles y la interfaz del jefe.
 Game::Game(): window(sf::VideoMode(1152, 864), "Proyecto Practico")
 {
     window.setFramerateLimit(60);
@@ -47,7 +48,7 @@ Game::Game(): window(sf::VideoMode(1152, 864), "Proyecto Practico")
     }
 }
 
-
+// Empaqueta las variables actuales del juego en un objeto SaveData para su persistencia.
 SaveData Game::createSaveData() {
     SaveData data = {};
 
@@ -79,10 +80,12 @@ SaveData Game::createSaveData() {
     return data;
 }
 
+// Guarda la partida actual llamando al sistema de archivos en el slot indicado.
 bool Game::saveGame(int slot) {
     return saveSystem.save(slot, createSaveData());
 }
 
+// Carga datos desde SaveData y reconstruye el estado del juego, las habitaciones y los enemigos.
 bool Game::loadGame(int slot) {
     SaveData data = {};
     if (!saveSystem.load(slot, data)) {
@@ -143,7 +146,7 @@ bool Game::loadGame(int slot) {
         bosses.push_back(
             EnemyBoss(sf::Vector2f(576.f, 360.f))
         );
-}
+    }
     setPlayerSafePosition(sf::Vector2f(data.playerX, data.playerY));
     aspiradora.setMaxDistance(progression.getVacuumRange());
 
@@ -153,7 +156,8 @@ bool Game::loadGame(int slot) {
     return true;
 }
 
-    void Game::openSaveSlot(int slot) {
+// Gestiona la apertura de un slot: Carga si existe el archivo, sino inicializa una nueva partida.
+void Game::openSaveSlot(int slot) {
     activeSaveSlot = slot;
     pauseMenu.setSelectedSlot(slot);
 
@@ -165,16 +169,19 @@ bool Game::loadGame(int slot) {
     }
 }
 
+// Inicializa las variables básicas y cambia el estado a gameplay para una nueva partida.
 void Game::startNewGame() {
     resetGame();
     gameState = Playing;
 }
 
+// Actualiza tanto la posición del jugador como el checkpoint seguro para respawn.
 void Game::setPlayerSafePosition(sf::Vector2f position) {
     player.setPosition(position);
     lastSafePlayerPosition = position;
 }
 
+// Configuración estética y geométrica de la trampilla de salida.
 void Game::setupTrapdoor() {
     trapdoor.setSize(sf::Vector2f(54.f, 54.f));
     trapdoor.setOrigin(27.f, 27.f);
@@ -184,6 +191,7 @@ void Game::setupTrapdoor() {
     trapdoor.setPosition(576.f, 432.f);
 }
 
+// Verifica la colisión del jugador con la trampilla activa para pasar al menú de mejoras.
 void Game::updateTrapdoor() {
     if (!trapdoorActive) {
         return;
@@ -197,6 +205,7 @@ void Game::updateTrapdoor() {
     }
 }
 
+// Limpia el escenario actual, avanza el contador de piso y reconfigura las salas.
 void Game::goToNextFloor() {
     //audio.stopBossMusic();
     //audio.playMusic();
@@ -230,10 +239,12 @@ void Game::goToNextFloor() {
     window.setTitle("Piso " + std::to_string(currentFloor));
 }
 
+// Define las coordenadas fijas del mapa donde se ubica la sala del Jefe (Fila 0, Columna 1).
 bool Game::isBossRoom(int x, int y) {
     return x == 1 && y == 0;
 }
 
+// Comprueba si todas las salas normales del piso actual fueron limpiadas antes de habilitar el Boss.
 bool Game::areNormalRoomsCleared() {
     for (int y = 0; y < rooms.size(); y++) {
         for (int x = 0; x < rooms[y].size(); x++) {
@@ -254,6 +265,7 @@ bool Game::areNormalRoomsCleared() {
     return true;
 }
 
+// Instancia la cantidad de jefes correspondientes según el piso actual y calcula sus posiciones de spawn.
 void Game::spawnBoss() {
     bosses.clear();
 
@@ -287,6 +299,7 @@ void Game::spawnBoss() {
     startBossIntro();
 }
 
+// Dispara la secuencia de presentación del jefe deteniendo la música regular.
 void Game::startBossIntro() {
     bossIntroClock.restart();
 
@@ -296,6 +309,7 @@ void Game::startBossIntro() {
     gameState = BossIntroState;
 }
 
+// Controla el temporizador de la intro del jefe para devolver el juego al estado activo.
 void Game::updateBossIntro() {
     if (bossIntroClock.getElapsedTime().asSeconds() >= 3.f) {
         gameState = Playing;
@@ -303,6 +317,7 @@ void Game::updateBossIntro() {
     }
 }
 
+// Loop principal del juego: Maneja el DeltaTime, los eventos de ventana, updates y renderizado.
 void Game::run() {
     while (window.isOpen()) {
         float deltaTime = frameClock.restart().asSeconds();
@@ -313,6 +328,7 @@ void Game::run() {
     }
 }
 
+// Inicializa la matriz 3x3 de habitaciones cargando las rutas correspondientes a sus capas CSV.
 void Game::setupRooms() {
     rooms.resize(3);
     for (int y = 0; y < 3; y++) {
@@ -360,6 +376,7 @@ void Game::setupRooms() {
     };
 }
 
+// Maneja la transición física a una nueva habitación, cargando sus tiles, enemigos iniciales y basuras.
 void Game::enterRoom(int x, int y) {
     currentRoomX = x;
     currentRoomY = y;
@@ -389,10 +406,11 @@ void Game::enterRoom(int x, int y) {
     room.visited = true;
 }
 
+// Verifica si la sala actual está completamente vacía de amenazas y suciedad para marcarla como limpia.
 void Game::checkRoomCleared() {
     RoomInfo& room = rooms[currentRoomY][currentRoomX];
 
-        if (!room.cleared &&
+    if (!room.cleared &&
         chasers.empty() &&
         shooters.empty() &&
         throwers.empty() &&
@@ -407,7 +425,7 @@ void Game::checkRoomCleared() {
     }
 }
 
-
+// Controla los límites de la pantalla y procesa el cambio de habitación coordinando las coordenadas de las puertas.
 void Game::checkRoomTransition() {
     RoomInfo& room = rooms[currentRoomY][currentRoomX];
 
@@ -457,6 +475,8 @@ void Game::checkRoomTransition() {
         }
     }
 }
+
+// Despacha los eventos del sistema, entradas de teclado y clicks en los menús de pausa, mejoras y principal.
 void Game::processEvents() {
     sf::Event event;
 
@@ -511,7 +531,6 @@ void Game::processEvents() {
                 goToNextFloor();
                 gameState = Playing;
                 audio.playLevelMusic();
-
             }
 
             continue;
@@ -559,7 +578,7 @@ void Game::processEvents() {
     }
 }
 
-
+// Máquina de estados: Direcciona la actualización lógica correspondiente al estado actual del motor.
 void Game::update(float deltaTime) {
     switch (gameState) {
     case MainMenuState:
@@ -585,6 +604,7 @@ void Game::update(float deltaTime) {
     }
 }
 
+// Dibuja los elementos del HUD temporal durante la animación o secuencia de entrada del Jefe.
 void Game::drawBossIntroHud() {
     float time = bossIntroClock.getElapsedTime().asSeconds();
     float percent = time / 3.f;
@@ -625,6 +645,7 @@ void Game::drawBossIntroHud() {
     }
 }
 
+// Dibuja la barra de HP superior del Boss basándose en su porcentaje de vida actual.
 void Game::drawBossHealthBar() {
     if (bosses.empty()) {
         return;
@@ -664,6 +685,7 @@ void Game::drawBossHealthBar() {
     }
 }
 
+// Rutina core del bucle de juego: Actualiza entidades, colisiones, sistemas de limpieza y lógicas de muerte.
 void Game::updatePlaying(float deltaTime) {
     updatePlayer(deltaTime);
     aspiradora.update(window, player.getCenter());
@@ -679,31 +701,33 @@ void Game::updatePlaying(float deltaTime) {
     updateMedkits();
 
     if (player.isDead()) {
-    progression.addDeath();
+        progression.addDeath();
 
-    if (progression.isRunOver()) {
-        gameState = GameOver;
-        window.setTitle("Perdiste 3 veces - Presiona R para reiniciar");
-    } else {
-        player.reset();
-        player.setPosition(lastSafePlayerPosition);
+        if (progression.isRunOver()) {
+            gameState = GameOver;
+            window.setTitle("Perdiste 3 veces - Presiona R para reiniciar");
+        } else {
+            player.reset();
+            player.setPosition(lastSafePlayerPosition);
 
-        window.setTitle(
-            "Moriste - Intentos: " +
-            std::to_string(progression.getDeaths()) +
-            "/" +
-            std::to_string(progression.getMaxDeaths())
-        );
+            window.setTitle(
+                "Moriste - Intentos: " +
+                std::to_string(progression.getDeaths()) +
+                "/" +
+                std::to_string(progression.getMaxDeaths())
+            );
+        }
     }
 }
-}
 
+// Monitorea el reinicio rápido del juego cuando la pantalla de Game Over está activa.
 void Game::updateGameOver() {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
         resetGame();
     }
 }
 
+// Dibuja la barra de progreso de capacidad de almacenamiento de basura de la aspiradora.
 void Game::drawTrashBar() {
     float stored = progression.getTrashStored();
     float capacity = progression.getTrashCapacity();
@@ -732,26 +756,27 @@ void Game::drawTrashBar() {
     window.draw(bar);
 }
 
+// Renderizado general: Limpia la pantalla y dibuja mapas, entidades, barras de estado y menús superpuestos.
 void Game::draw() {
 
     if (gameState == UpgradeMenuState) {
-    upgradeMenu.draw(window, progression);
-    window.display();
-    return;
-}
+        upgradeMenu.draw(window, progression);
+        window.display();
+        return;
+    }
 
     if (gameState == MainMenuState) {
-    mainMenu.draw(window, saveSystem);
-    window.display();
-    return;
-}
+        mainMenu.draw(window, saveSystem);
+        window.display();
+        return;
+    }
     window.clear(sf::Color::Black);
 
     tileMap.drawMap(window);
 
     if (trapdoorActive) {
-    window.draw(trapdoor);
-}
+        window.draw(trapdoor);
+    }
 
     for (int i = 0; i < messes.size(); i++) {
         messes[i].draw(window);
@@ -781,25 +806,26 @@ void Game::draw() {
     }
 
     for (int i = 0; i < bosses.size(); i++) {
-    bosses[i].draw(window);
-}
+        bosses[i].draw(window);
+    }
 
     player.drawStamina(window);
     player.drawLife(window);
 
     if (gameState == BossIntroState) {
-    drawBossIntroHud();
-} else if (!bosses.empty()) {
-    drawBossHealthBar();
+        drawBossIntroHud();
+    } else if (!bosses.empty()) {
+        drawBossHealthBar();
     }
 
     if (gameState == PausedState) {
-    pauseMenu.draw(window, saveSystem);
-}
+        pauseMenu.draw(window, saveSystem);
+    }
 
     window.display();
 }
 
+// Carga selectiva de archivos CSV para testeo o presets de mapas específicos (ej. Mapa 1 y Mapa 6).
 void Game::loadMap(int mapNumber) {
     if (mapNumber == 1) {
         tileMap.loadGroundLayer("maps/map1-buildingLayer.csv");
@@ -810,6 +836,7 @@ void Game::loadMap(int mapNumber) {
     }
 }
 
+// Resetea todas las colecciones, relojes internos y progresión para arrancar una partida limpia de cero.
 void Game::resetGame() {
     player.reset();
 
@@ -845,6 +872,7 @@ void Game::resetGame() {
     window.setTitle("Proyecto Practico");
 }
 
+// Cambia al segundo mapa tradicional del juego (Legacy Flow) limpiando instancias de vectores.
 void Game::changeToMap2() {
     currentMap = 2;
     enemiesKilled = 0;
@@ -874,6 +902,7 @@ void Game::changeToMap2() {
     audio.playLevelMusic();
 }
 
+// Algoritmo de cálculo aleatorio para determinar el spawn exterior en cualquiera de los 4 márgenes de la pantalla.
 sf::Vector2f Game::randomSpawn() {
     int side = std::rand() % 4;
     float w = (float)window.getSize().x;
@@ -886,6 +915,7 @@ sf::Vector2f Game::randomSpawn() {
     return sf::Vector2f(-30.f, (float)(std::rand() % (int)h));
 }
 
+// Genera un Vector2f aleatorio dentro del área transitable de la sala para instanciar suciedad.
 sf::Vector2f Game::randomMessPosition() {
     float x = 60.f + (std::rand() % 680);
     float y = 60.f + (std::rand() % 480);
@@ -893,6 +923,7 @@ sf::Vector2f Game::randomMessPosition() {
     return sf::Vector2f(x, y);
 }
 
+// Spawnea la tanda inicial de enemigos escalando la dificultad y la cantidad según el piso en el que está el jugador.
 void Game::spawnInitialEnemies() {
     int chaserCount = 1;
     int shooterCount = 1;
@@ -929,12 +960,14 @@ void Game::spawnInitialEnemies() {
     }
 }
 
+// Instancia el pool inicial estático de 12 entidades de basura en posiciones aleatorias de la sala.
 void Game::spawnInitialMess() {
     for (int i = 0; i < 12; i++) {
         messes.push_back(mess(randomMessPosition()));
     }
 }
 
+// Aplica la lógica de físicas y movimientos al jugador resolviendo colisiones directas contra las capas del TileMap.
 void Game::updatePlayer(float deltaTime) {
     sf::Vector2f oldPlayerPosition = player.getPosition();
 
@@ -949,6 +982,7 @@ void Game::updatePlayer(float deltaTime) {
     player.update(deltaTime);
 }
 
+// Chequea la succión de basura por el cono de la aspiradora, otorga recompensas de oro/puntos y vacía los elementos limpiados.
 void Game::updateMessCleaning(float deltaTime) {
     int messCountBefore = messes.size();
 
@@ -991,6 +1025,7 @@ void Game::updateMessCleaning(float deltaTime) {
     }
 }
 
+// Ejecuta las rutinas de IA y actualizaciones lógicas de todos los subtipos de enemigos y bosses activos.
 void Game::updateEnemies(float deltaTime) {
     for (int i = 0; i < chasers.size(); i++) {
         chasers[i].update(deltaTime, player, window);
@@ -1004,10 +1039,11 @@ void Game::updateEnemies(float deltaTime) {
         throwers[i].update(deltaTime, player, aspiradora, window, tileMap);
     }
     for (int i = 0; i < bosses.size(); i++) {
-    bosses[i].update(deltaTime, player, aspiradora, window, tileMap);
+        bosses[i].update(deltaTime, player, aspiradora, window, tileMap);
     }
 }
 
+// Aplica el daño por segundo (tick rate) de la aspiradora a los enemigos y jefes capturados dentro de su rango de acción.
 void Game::applyVacuumDamage() {
     if (vacuumDamageClock.getElapsedTime().asSeconds() < 0.25f) {
         return;
@@ -1039,7 +1075,6 @@ void Game::applyVacuumDamage() {
         }
     }
 
-
     for (int i = 0; i < bosses.size(); i++) {
         if (!bosses[i].isDead() &&
             aspiradora.getBounds().intersects(bosses[i].getBounds())) {
@@ -1051,10 +1086,10 @@ void Game::applyVacuumDamage() {
     if (hitSomething) {
         audio.playHit();
         vacuumDamageClock.restart();
+    }
 }
 
-}
-
+// Filtra y elimina del juego las entidades muertas, generando residuos en su lugar y procesando sus recompensas económicas.
 void Game::removeDeadEnemies() {
     for (int i = 0; i < chasers.size(); i++) {
         if (chasers[i].isDead()) {
@@ -1092,44 +1127,48 @@ void Game::removeDeadEnemies() {
             bosses.erase(bosses.begin() + i);
             progression.addBossReward(500, 20);
             i--;
+        }
     }
 }
+
+// Devuelve el factor de escala exponencial basado en el piso actual para incrementar las stats enemigas.
+float Game::getDifficultyMultiplier() {
+    return std::pow(1.2f, currentFloor - 1);
 }
 
-    float Game::getDifficultyMultiplier() {
-        return std::pow(1.2f, currentFloor - 1);
-    }
-
-    void Game::addChaser(sf::Vector2f position) {
-        EnemyChaser enemy(position);
-        enemy.applyDifficulty(getDifficultyMultiplier());
-        chasers.push_back(enemy);
-    }
-
-    void Game::addShooter(sf::Vector2f position) {
-        EnemyShooter enemy(position);
-        enemy.applyDifficulty(getDifficultyMultiplier());
-        shooters.push_back(enemy);
-    }
-
-    void Game::addThrower(sf::Vector2f position) {
-        EnemyThrower enemy(position);
-        enemy.applyDifficulty(getDifficultyMultiplier());
-        throwers.push_back(enemy);
-    }
-
-    void Game::addBoss(sf::Vector2f position) {
-        EnemyBoss boss(position);
-        boss.applyDifficulty(getDifficultyMultiplier());
-        bosses.push_back(boss);
+// Métodos helpers para instanciar subtipos específicos de enemigos aplicando el multiplicador de dificultad.
+void Game::addChaser(sf::Vector2f position) {
+    EnemyChaser enemy(position);
+    enemy.applyDifficulty(getDifficultyMultiplier());
+    chasers.push_back(enemy);
 }
 
+void Game::addShooter(sf::Vector2f position) {
+    EnemyShooter enemy(position);
+    enemy.applyDifficulty(getDifficultyMultiplier());
+    shooters.push_back(enemy);
+}
+
+void Game::addThrower(sf::Vector2f position) {
+    EnemyThrower enemy(position);
+    enemy.applyDifficulty(getDifficultyMultiplier());
+    throwers.push_back(enemy);
+}
+
+void Game::addBoss(sf::Vector2f position) {
+    EnemyBoss boss(position);
+    boss.applyDifficulty(getDifficultyMultiplier());
+    bosses.push_back(boss);
+}
+
+// Compara las bajas del jugador con el cupo requerido para habilitar el gatillo de limpieza de nivel.
 void Game::checkMapProgress() {
     if (enemiesKilled >= enemiesNeededForNextMap) {
         waitingForCleaning = true;
     }
 }
 
+// Respawn en tiempo real: Monitorea relojes independientes para introducir refuerzos si no se superan las cuotas máximas de la sala.
 void Game::updateSpawns() {
     RoomInfo& room = rooms[currentRoomY][currentRoomX];
 
@@ -1160,6 +1199,7 @@ void Game::updateSpawns() {
     }
 }
 
+// Controla el ciclo de vida y la recolección de botiquines médicos en el escenario.
 void Game::updateMedkits() {
     if (medkitSpawnClock.getElapsedTime().asSeconds() >= 5.f && medkits.size() < 3) {
         float x = 60.f + (std::rand() % 680);
@@ -1187,6 +1227,7 @@ void Game::updateMedkits() {
     );
 }
 
+// Legado / Callback estructural: Valida condiciones de limpieza absoluta para forzar el salto directo al Mapa 2.
 void Game::checkMapChange() {
     if (waitingForCleaning &&
         messes.empty() &&
@@ -1197,5 +1238,3 @@ void Game::checkMapChange() {
         changeToMap2();
     }
 }
-
-
